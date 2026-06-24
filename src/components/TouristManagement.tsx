@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Globe, Users, Plus, Trash2, Edit2, X, Save } from 'lucide-react';
 import { TouristAPI } from '../api/tourist.api';
 import { VisaAPI } from '../api/visa.api';
+import Swal from 'sweetalert2';
 
 const TouristManagement: React.FC = () => {
     // Tourists Data
@@ -15,7 +16,6 @@ const TouristManagement: React.FC = () => {
     const [unassignedVisas, setUnassignedVisas] = useState<any[]>([]);
     
     // UI states
-    const [actionStatus, setActionStatus] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -47,7 +47,6 @@ const TouristManagement: React.FC = () => {
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setActionStatus('');
         try {
             if (editingId) {
                 // Update existing tourist
@@ -55,14 +54,28 @@ const TouristManagement: React.FC = () => {
                 if (selectedVisaId) {
                     await VisaAPI.partialUpdateVisa(Number(selectedVisaId), { touristId: editingId });
                 }
-                setActionStatus(`Tourist '${touristForm.firstName} ${touristForm.lastName}' updated successfully!`);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: `Tourist '${touristForm.firstName} ${touristForm.lastName}' updated successfully!`,
+                    background: '#0f172a',
+                    color: '#fff',
+                    confirmButtonColor: '#3b82f6'
+                });
             } else {
                 // Create new tourist
                 const newTourist = await TouristAPI.registerTourist(touristForm);
                 if (selectedVisaId && newTourist && newTourist.touristId) {
                     await VisaAPI.partialUpdateVisa(Number(selectedVisaId), { touristId: newTourist.touristId });
                 }
-                setActionStatus(`Tourist '${touristForm.firstName} ${touristForm.lastName}' registered successfully!`);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Registered!',
+                    text: `Tourist '${touristForm.firstName} ${touristForm.lastName}' registered successfully!`,
+                    background: '#0f172a',
+                    color: '#fff',
+                    confirmButtonColor: '#10b981'
+                });
             }
             // Reset form
             setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
@@ -71,7 +84,14 @@ const TouristManagement: React.FC = () => {
             fetchManageTourists(); // Refresh list
             fetchUnassignedVisas(); // Refresh visas
         } catch (error: any) {
-            setActionStatus(`Failed to ${editingId ? 'update' : 'register'} tourist.`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `Failed to ${editingId ? 'update' : 'register'} tourist.`,
+                background: '#0f172a',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -88,26 +108,52 @@ const TouristManagement: React.FC = () => {
         });
         setSelectedVisaId('');
         window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll up to the form
-        setActionStatus('');
     };
 
     const handleCancelEdit = () => {
         setEditingId(null);
         setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
         setSelectedVisaId('');
-        setActionStatus('');
     };
 
     const handleDeleteTourist = async (id: number) => {
-        if(!window.confirm('Are you sure you want to delete this tourist?')) return;
-        try {
-            await TouristAPI.deleteTourist(id);
-            fetchManageTourists(); // Refresh list after deletion
-            if (editingId === id) {
-                handleCancelEdit(); // Clear form if we deleted the tourist we were editing
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#0f172a',
+            color: '#fff',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#475569',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await TouristAPI.deleteTourist(id);
+                fetchManageTourists(); // Refresh list after deletion
+                if (editingId === id) {
+                    handleCancelEdit(); // Clear form if we deleted the tourist we were editing
+                }
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'The tourist has been deleted.',
+                    icon: 'success',
+                    background: '#0f172a',
+                    color: '#fff',
+                    confirmButtonColor: '#10b981'
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to delete tourist',
+                    background: '#0f172a',
+                    color: '#fff',
+                    confirmButtonColor: '#ef4444'
+                });
             }
-        } catch (error) {
-            alert('Failed to delete tourist');
         }
     };
 
@@ -129,12 +175,6 @@ const TouristManagement: React.FC = () => {
                         </button>
                     )}
                 </div>
-                
-                {actionStatus && (
-                    <div className={`mb-6 p-4 rounded-xl text-sm font-medium border ${actionStatus.includes('Failed') ? 'bg-red-500/10 text-red-400 border-red-500/20' : editingId ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
-                        {actionStatus}
-                    </div>
-                )}
                 
                 <form onSubmit={handleFormSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>

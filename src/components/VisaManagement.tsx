@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FileText, Plus, Trash2, Edit2, X, Save, Search } from 'lucide-react';
 import { VisaAPI } from '../api/visa.api';
 import { TouristAPI } from '../api/tourist.api';
+import Swal from 'sweetalert2';
 
 const VisaManagement: React.FC = () => {
     // Visas Data
@@ -20,7 +21,6 @@ const VisaManagement: React.FC = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
     
     // UI states
-    const [actionStatus, setActionStatus] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -76,21 +76,41 @@ const VisaManagement: React.FC = () => {
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setActionStatus('');
         try {
             if (editingId) {
                 await VisaAPI.updateVisa(editingId, { ...visaForm, visaId: editingId, touristId: Number(visaForm.touristId) });
-                setActionStatus(`Visa #${editingId} updated successfully!`);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: `Visa #${editingId} updated successfully!`,
+                    background: '#0f172a',
+                    color: '#fff',
+                    confirmButtonColor: '#3b82f6'
+                });
             } else {
                 await VisaAPI.createVisa({ ...visaForm, visaId: Number(visaForm.visaId), touristId: Number(visaForm.touristId) });
-                setActionStatus(`Visa created successfully!`);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Created!',
+                    text: `Visa created successfully!`,
+                    background: '#0f172a',
+                    color: '#fff',
+                    confirmButtonColor: '#10b981'
+                });
             }
             // Reset form
             setVisaForm({ visaId: '', touristId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
             setEditingId(null);
             fetchVisas();
         } catch (error: any) {
-            setActionStatus(`Failed to ${editingId ? 'update' : 'create'} visa.`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `Failed to ${editingId ? 'update' : 'create'} visa.`,
+                background: '#0f172a',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -107,23 +127,49 @@ const VisaManagement: React.FC = () => {
             status: visa.status
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        setActionStatus('');
     };
 
     const handleCancelEdit = () => {
         setEditingId(null);
         setVisaForm({ visaId: '', touristId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
-        setActionStatus('');
     };
 
     const handleDeleteVisa = async (id: number) => {
-        if(!window.confirm(`Are you sure you want to delete Visa #${id}?`)) return;
-        try {
-            await VisaAPI.deleteVisa(id);
-            fetchVisas();
-            if (editingId === id) handleCancelEdit();
-        } catch (error) {
-            alert('Failed to delete visa');
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#0f172a',
+            color: '#fff',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#475569',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await VisaAPI.deleteVisa(id);
+                fetchVisas();
+                if (editingId === id) handleCancelEdit();
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'The visa has been deleted.',
+                    icon: 'success',
+                    background: '#0f172a',
+                    color: '#fff',
+                    confirmButtonColor: '#10b981'
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to delete visa',
+                    background: '#0f172a',
+                    color: '#fff',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
         }
     };
 
@@ -145,12 +191,6 @@ const VisaManagement: React.FC = () => {
                         </button>
                     )}
                 </div>
-                
-                {actionStatus && (
-                    <div className={`mb-6 p-4 rounded-xl text-sm font-medium border ${actionStatus.includes('Failed') ? 'bg-red-500/10 text-red-400 border-red-500/20' : editingId ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
-                        {actionStatus}
-                    </div>
-                )}
                 
                 <form onSubmit={handleFormSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>

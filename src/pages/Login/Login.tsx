@@ -2,26 +2,44 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ShieldAlert, ArrowRight } from 'lucide-react';
 import { AuthAPI } from '../../api/auth.api';
+import Swal from 'sweetalert2';
 
 const Login: React.FC = () => {
     const [_email, _setEmail] = useState('');
     const [_password, _setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
         try {
             const data = await AuthAPI.login({ email: _email, password: _password });
             // Save token
             localStorage.setItem('accessToken', data.accessToken);
+            
+            await Swal.fire({
+                icon: 'success',
+                title: 'Login Successful',
+                text: 'Welcome back!',
+                background: '#0f172a',
+                color: '#fff',
+                confirmButtonColor: '#10b981',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            
             // Navigate to Dashboard
             navigate('/admin');
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Access Denied',
+                text: err.response?.data?.message || 'Invalid credentials. Please try again.',
+                background: '#0f172a',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
         } finally {
             setLoading(false);
         }
@@ -40,12 +58,6 @@ const Login: React.FC = () => {
                     <h1 className="text-3xl font-bold text-white tracking-tight">System Access</h1>
                     <p className="text-slate-400 mt-2">Smart Visa & Tourist Tracking</p>
                 </div>
-
-                {error && (
-                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
-                        {error}
-                    </div>
-                )}
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
