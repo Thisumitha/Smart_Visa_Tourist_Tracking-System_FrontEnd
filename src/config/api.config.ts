@@ -12,11 +12,11 @@ const BASE_IP = IS_PRODUCTION ? PROD_IP : LOCAL_IP;
 // ==========================================
 // Microservice Base URLs
 // ==========================================
-export const AUTH_API_URL = `${BASE_IP}:8080/api`;
-export const TOURIST_API_URL = `${BASE_IP}:8081/api`;
-export const TRACKING_API_URL = `${BASE_IP}:8082/api`;
-export const ALERT_API_URL = `${BASE_IP}:8083/api`;
-export const PARTNER_API_URL = `${BASE_IP}:8084/api`;
+export const AUTH_API_URL = `${BASE_IP}:8082/api`;
+export const TOURIST_API_URL = `${BASE_IP}:8084/api`;
+export const TRACKING_API_URL = `${BASE_IP}:8085/api`;
+export const ALERT_API_URL = `${BASE_IP}:8081/api`;
+export const PARTNER_API_URL = `${BASE_IP}:8083/api`;
 
 
 
