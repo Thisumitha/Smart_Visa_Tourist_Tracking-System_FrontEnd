@@ -1,6 +1,19 @@
-// import { partnerApiClient } from '../config/api.config';
+import { partnerApiClient } from '../config/api.config';
 
 export const PartnerAPI = {
+    /**
+     * Create a new Travel Agency
+     */
+    createAgency: async (agencyData: any) => {
+        try {
+            const response = await partnerApiClient.post('/agency', agencyData);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to create agency", error);
+            throw error;
+        }
+    },
+
     /**
      * Agency: Get assigned tourists and itineraries
      */

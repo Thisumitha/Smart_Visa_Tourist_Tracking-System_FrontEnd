@@ -41,6 +41,19 @@ export const VisaAPI = {
     },
 
     /**
+     * Partially update an existing visa (e.g. assigning a touristId)
+     */
+    partialUpdateVisa: async (id: number, fields: any) => {
+        try {
+            const response = await trackingApiClient.patch(`/visas/partialupdate/${id}`, fields);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to partially update visa", error);
+            throw error;
+        }
+    },
+
+    /**
      * Delete a visa
      */
     deleteVisa: async (id: number) => {

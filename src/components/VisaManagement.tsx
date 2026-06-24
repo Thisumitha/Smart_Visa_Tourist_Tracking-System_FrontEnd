@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FileText, Plus, Trash2, Edit2, X, Save, Search } from 'lucide-react';
 import { VisaAPI } from '../api/visa.api';
+import { TouristAPI } from '../api/tourist.api';
 
 const VisaManagement: React.FC = () => {
     // Visas Data
@@ -11,8 +12,11 @@ const VisaManagement: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchType, setSearchType] = useState('touristId'); // 'touristId' or 'visaType'
 
+    // Tourists Dropdown Data
+    const [availableTourists, setAvailableTourists] = useState<any[]>([]);
+
     // Form
-    const [visaForm, setVisaForm] = useState({ visaId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
+    const [visaForm, setVisaForm] = useState({ visaId: '', touristId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
     const [editingId, setEditingId] = useState<number | null>(null);
     
     // UI states
@@ -21,7 +25,17 @@ const VisaManagement: React.FC = () => {
 
     useEffect(() => {
         fetchVisas();
+        fetchTourists();
     }, []);
+
+    const fetchTourists = async () => {
+        try {
+            const data = await TouristAPI.getAllTourists();
+            setAvailableTourists(data);
+        } catch (error) {
+            console.error("Failed to fetch tourists for dropdown", error);
+        }
+    };
 
     const fetchVisas = async () => {
         setLoadingVisas(true);
@@ -65,14 +79,14 @@ const VisaManagement: React.FC = () => {
         setActionStatus('');
         try {
             if (editingId) {
-                await VisaAPI.updateVisa(editingId, { ...visaForm, visaId: editingId });
+                await VisaAPI.updateVisa(editingId, { ...visaForm, visaId: editingId, touristId: Number(visaForm.touristId) });
                 setActionStatus(`Visa #${editingId} updated successfully!`);
             } else {
-                await VisaAPI.createVisa({ ...visaForm, visaId: Number(visaForm.visaId) });
+                await VisaAPI.createVisa({ ...visaForm, visaId: Number(visaForm.visaId), touristId: Number(visaForm.touristId) });
                 setActionStatus(`Visa created successfully!`);
             }
             // Reset form
-            setVisaForm({ visaId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
+            setVisaForm({ visaId: '', touristId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
             setEditingId(null);
             fetchVisas();
         } catch (error: any) {
@@ -86,6 +100,7 @@ const VisaManagement: React.FC = () => {
         setEditingId(visa.visaId);
         setVisaForm({
             visaId: visa.visaId.toString(),
+            touristId: visa.touristId?.toString() || '',
             visaType: visa.visaType,
             issueDate: visa.issueDate,
             expiryDate: visa.expiryDate,
@@ -97,7 +112,7 @@ const VisaManagement: React.FC = () => {
 
     const handleCancelEdit = () => {
         setEditingId(null);
-        setVisaForm({ visaId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
+        setVisaForm({ visaId: '', touristId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
         setActionStatus('');
     };
 
@@ -141,6 +156,18 @@ const VisaManagement: React.FC = () => {
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">Visa ID</label>
                         <input type="number" disabled={!!editingId} required value={visaForm.visaId} onChange={e => setVisaForm({...visaForm, visaId: e.target.value})} className={`w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none ${editingId ? 'opacity-50 cursor-not-allowed' : ''}`} placeholder="e.g. 1001" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Assign to Tourist</label>
+                        <select required value={visaForm.touristId} onChange={e => setVisaForm({...visaForm, touristId: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none">
+                            <option value="" disabled>Select a tourist...</option>
+                            <option value="0" className="font-bold text-amber-400">Unassigned (Link Later)</option>
+                            {availableTourists.map(t => (
+                                <option key={t.touristId} value={t.touristId}>
+                                    {t.firstName} {t.lastName} (ID: {t.touristId})
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">Visa Type</label>
@@ -207,6 +234,7 @@ const VisaManagement: React.FC = () => {
                         <thead>
                             <tr className="bg-slate-900/80 border-b border-glassborder text-slate-400 text-xs tracking-wider uppercase">
                                 <th className="p-4 font-medium">Visa ID</th>
+                                <th className="p-4 font-medium">Tourist ID</th>
                                 <th className="p-4 font-medium">Type</th>
                                 <th className="p-4 font-medium">Issued</th>
                                 <th className="p-4 font-medium">Expires</th>
@@ -216,13 +244,14 @@ const VisaManagement: React.FC = () => {
                         </thead>
                         <tbody>
                             {loadingVisas ? (
-                                <tr><td colSpan={6} className="p-8 text-center text-slate-500">Loading visas...</td></tr>
+                                <tr><td colSpan={7} className="p-8 text-center text-slate-500">Loading visas...</td></tr>
                             ) : visas.length === 0 ? (
-                                <tr><td colSpan={6} className="p-8 text-center text-slate-500">No visas found.</td></tr>
+                                <tr><td colSpan={7} className="p-8 text-center text-slate-500">No visas found.</td></tr>
                             ) : (
                                 visas.map(v => (
                                     <tr key={v.visaId} className={`border-b border-glassborder transition-colors ${editingId === v.visaId ? 'bg-indigo-900/20' : 'hover:bg-slate-800/30'}`}>
                                         <td className="p-4 font-medium text-white">#{v.visaId}</td>
+                                        <td className="p-4 text-slate-300">#{v.touristId}</td>
                                         <td className="p-4 text-slate-300">{v.visaType}</td>
                                         <td className="p-4 text-slate-400">{v.issueDate}</td>
                                         <td className="p-4 text-slate-400">{v.expiryDate}</td>

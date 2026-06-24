@@ -1,22 +1,24 @@
+import { TouristAPI } from './tourist.api';
+
 // Dummy API for Admin Dashboard functionality using multiple microservices
 export const AdminAPI = {
     /**
      * Fetches all registered tourists from the Tourist Service
      */
     getAllTourists: async () => {
-        // const response = await touristApiClient.get('/tourists');
-        // return response.data;
-        
-        // Returning dummy data for UI display since TouristService might not be fully built
-        return new Promise(resolve => {
-            setTimeout(() => {
-                resolve([
-                    { id: 1, name: 'John Doe', passport: 'AB123456', status: 'Approved' },
-                    { id: 2, name: 'Jane Smith', passport: 'CD789012', status: 'Pending Verification' },
-                    { id: 3, name: 'Carlos Ray', passport: 'XY987654', status: 'Approved' },
-                ]);
-            }, 500);
-        });
+        try {
+            const tourists = await TouristAPI.getAllTourists();
+            // Map the real backend data to the UI format expected by the overview
+            return tourists.map((t: any) => ({
+                id: t.touristId,
+                name: `${t.firstName} ${t.lastName}`,
+                passport: t.nationality, // Backend doesn't have passport, so we show nationality
+                status: 'Registered'
+            }));
+        } catch (error) {
+            console.error("Failed to fetch real tourists for admin dashboard", error);
+            return [];
+        }
     },
 
     /**

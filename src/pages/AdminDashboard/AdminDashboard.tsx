@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Users, MapPin, Activity, Building2, Briefcase, Plus, Save, UserPlus } from 'lucide-react';
 import { AdminAPI } from '../../api/admin.api';
 import { AuthAPI } from '../../api/auth.api';
+import { PartnerAPI } from '../../api/partner.api';
 import AdminSidebar from '../../components/AdminSidebar';
 import TouristManagement from '../../components/TouristManagement';
 import VisaManagement from '../../components/VisaManagement';
@@ -19,8 +20,8 @@ const AdminDashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     // Form states
-    const [userForm, setUserForm] = useState({ email: '', password: '', role: 'ROLE_AGENCY' });
-    const [agencyForm, setAgencyForm] = useState({ name: '', license: '', email: '' });
+    const [userForm, setUserForm] = useState({ email: '', password: '', role: 'ROLE_ADMIN' });
+    const [agencyForm, setAgencyForm] = useState({ name: '', license: '', email: '', password: '' });
     const [hotelForm, setHotelForm] = useState({ name: '', registrationId: '', district: '' });
     
     // UI states
@@ -67,10 +68,32 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
-    const handleRegisterAgency = (e: React.FormEvent) => {
+    const handleRegisterAgency = async (e: React.FormEvent) => {
         e.preventDefault();
-        setRegisterStatus(`Mock: Agency '${agencyForm.name}' created successfully.`);
-        setAgencyForm({ name: '', license: '', email: '' });
+        setIsRegistering(true);
+        setRegisterStatus('');
+        try {
+            // Step 1: Create the User Account
+            await AuthAPI.registerUser({
+                email: agencyForm.email,
+                password: agencyForm.password,
+                roles: ['ROLE_AGENCY']
+            });
+
+            // Step 2: Create the Agency Profile
+            await PartnerAPI.createAgency({
+                agencyName: agencyForm.name,
+                licenseNumber: Number(agencyForm.license.replace(/\D/g,'')) || 0, // ensure it's a number for backend
+                status: true
+            });
+
+            setRegisterStatus(`Success! User Account and Agency Profile '${agencyForm.name}' created.`);
+            setAgencyForm({ name: '', license: '', email: '', password: '' });
+        } catch (error: any) {
+            setRegisterStatus(error.response?.data || 'Failed to register Agency. Make sure you are logged in as ADMIN.');
+        } finally {
+            setIsRegistering(false);
+        }
     };
 
     const handleRegisterHotel = (e: React.FormEvent) => {
@@ -165,9 +188,8 @@ const AdminDashboard: React.FC = () => {
                             <div>
                                 <label className="block text-sm font-medium text-slate-300 mb-2">System Role</label>
                                 <select value={userForm.role} onChange={e => setUserForm({...userForm, role: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
-                                    <option value="ROLE_AGENCY">Travel Agency (ROLE_AGENCY)</option>
-                                    <option value="ROLE_HOTEL">Hotel Partner (ROLE_HOTEL)</option>
                                     <option value="ROLE_ADMIN">System Admin (ROLE_ADMIN)</option>
+                                    <option value="ROLE_IMMIGRATION">Immigration Officer (ROLE_IMMIGRATION)</option>
                                 </select>
                             </div>
                             <button type="submit" disabled={isRegistering} className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-all flex justify-center items-center gap-2">
@@ -198,11 +220,15 @@ const AdminDashboard: React.FC = () => {
                                 <input type="text" required value={agencyForm.license} onChange={e => setAgencyForm({...agencyForm, license: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="SLTBA-12345" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Contact Email</label>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Contact Email (Login ID)</label>
                                 <input type="email" required value={agencyForm.email} onChange={e => setAgencyForm({...agencyForm, email: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="contact@lankatours.com" />
                             </div>
-                            <button type="submit" className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all flex justify-center items-center gap-2">
-                                <Plus size={18} /> Register Agency Profile
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Account Password</label>
+                                <input type="password" required value={agencyForm.password} onChange={e => setAgencyForm({...agencyForm, password: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="••••••••" />
+                            </div>
+                            <button type="submit" disabled={isRegistering} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all flex justify-center items-center gap-2">
+                                {isRegistering ? 'Registering...' : <><Plus size={18} /> Register Agency Profile & Account</>}
                             </button>
                         </form>
                     </div>
