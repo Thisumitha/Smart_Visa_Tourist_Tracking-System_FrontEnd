@@ -1,10 +1,8 @@
-import { trackingApiClient } from '../config/api.config';
-
 export const TrackingAPI = {
     /**
      * Hotel/Agency: Log a tourist's location (Check-in)
      */
-    logLocation: async (data: { touristId: number; locationType: string; locationId: string; remarks?: string }) => {
+    logLocation: async (_data: { touristId: number; locationType: string; locationId: string; remarks?: string }) => {
         try {
             // const response = await trackingApiClient.post('/tracking/log', data);
             // return response.data;
