@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FileText, Users, Plus, Trash2, Edit2, X, Save, Search } from 'lucide-react';
+import { FileText, Plus, Trash2, Edit2, X, Save, Search } from 'lucide-react';
 import { VisaAPI } from '../api/visa.api';
 
 const VisaManagement: React.FC = () => {
