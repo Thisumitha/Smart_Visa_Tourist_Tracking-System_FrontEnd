@@ -3,7 +3,7 @@ import axios from 'axios';
 // ==========================================
 // Environment Toggle (Local vs Production)
 // ==========================================
-const IS_PRODUCTION = false; // Change to true when deploying to your VPS
+const IS_PRODUCTION = true; // Change to true when deploying to your VPS
 
 const LOCAL_IP = 'http://localhost';
 const PROD_IP = 'http://207.180.253.221';
