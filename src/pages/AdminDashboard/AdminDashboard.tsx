@@ -77,7 +77,7 @@ const AdminDashboard: React.FC = () => {
             await AuthAPI.registerUser({
                 email: agencyForm.email,
                 password: agencyForm.password,
-                roles: ['ROLE_AGENCY']
+                roles: ['TRAVEL_AGENCY_STAFF']
             });
 
             // Step 2: Create the Agency Profile
