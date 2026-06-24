@@ -15,8 +15,11 @@ const Login: React.FC = () => {
         setLoading(true);
         try {
             const data = await AuthAPI.login({ email: _email, password: _password });
-            // Save token
+            // Save token and role
             localStorage.setItem('accessToken', data.accessToken);
+            if (data.role) {
+                localStorage.setItem('role', data.role);
+            }
             
             await Swal.fire({
                 icon: 'success',
@@ -29,8 +32,19 @@ const Login: React.FC = () => {
                 showConfirmButton: false
             });
             
-            // Navigate to Dashboard
-            navigate('/admin');
+            // Navigate to appropriate Dashboard based on Role
+            const userRole = data.role || 'ROLE_ADMIN'; // Fallback
+            if (userRole === 'ROLE_ADMIN') {
+                navigate('/admin');
+            } else if (userRole === 'ROLE_AGENCY') {
+                navigate('/agency');
+            } else if (userRole === 'ROLE_HOTEL') {
+                navigate('/hotel');
+            } else if (userRole === 'ROLE_IMMIGRATION') {
+                navigate('/immigration');
+            } else {
+                navigate('/admin'); // Default fallback
+            }
         } catch (err: any) {
             Swal.fire({
                 icon: 'error',
