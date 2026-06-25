@@ -8,6 +8,8 @@ import AdminSidebar from '../../components/AdminSidebar';
 import TouristManagement from '../../components/TouristManagement';
 import VisaManagement from '../../components/VisaManagement';
 import AlertManagement from '../../components/AlertManagement';
+import RegistrationWizard from '../../components/RegistrationWizard';
+import PassportManagement from '../../components/PassportManagement';
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -160,8 +162,16 @@ const AdminDashboard: React.FC = () => {
             );
         }
 
+        if (activeTab === 'wizard') {
+            return <RegistrationWizard />;
+        }
+
         if (activeTab === 'tourists') {
             return <TouristManagement />;
+        }
+
+        if (activeTab === 'passports') {
+            return <PassportManagement />;
         }
 
         if (activeTab === 'visas') {

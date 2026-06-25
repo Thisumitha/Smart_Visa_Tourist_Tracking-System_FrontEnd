@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FileText, Plus, Trash2, Edit2, X, Save, Search } from 'lucide-react';
 import { VisaAPI } from '../api/visa.api';
-import { TouristAPI } from '../api/tourist.api';
+import { PassportAPI } from '../api/tourist.api';
 import Swal from 'sweetalert2';
 
 const VisaManagement: React.FC = () => {
@@ -11,13 +11,13 @@ const VisaManagement: React.FC = () => {
 
     // Search States
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchType, setSearchType] = useState('touristId'); // 'touristId' or 'visaType'
+    const [searchType, setSearchType] = useState('passportId'); // 'passportId' or 'visaType'
 
-    // Tourists Dropdown Data
-    const [availableTourists, setAvailableTourists] = useState<any[]>([]);
+    // Passports Dropdown Data
+    const [availablePassports, setAvailablePassports] = useState<any[]>([]);
 
     // Form
-    const [visaForm, setVisaForm] = useState({ visaId: '', touristId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
+    const [visaForm, setVisaForm] = useState({ visaId: '', passportId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
     const [editingId, setEditingId] = useState<number | null>(null);
     
     // UI states
@@ -25,15 +25,15 @@ const VisaManagement: React.FC = () => {
 
     useEffect(() => {
         fetchVisas();
-        fetchTourists();
+        fetchPassports();
     }, []);
 
-    const fetchTourists = async () => {
+    const fetchPassports = async () => {
         try {
-            const data = await TouristAPI.getAllTourists();
-            setAvailableTourists(data);
+            const data = await PassportAPI.getAllPassports();
+            setAvailablePassports(data);
         } catch (error) {
-            console.error("Failed to fetch tourists for dropdown", error);
+            console.error("Failed to fetch passports for dropdown", error);
         }
     };
 
@@ -59,8 +59,8 @@ const VisaManagement: React.FC = () => {
         setLoadingVisas(true);
         try {
             let data;
-            if (searchType === 'touristId') {
-                data = await VisaAPI.searchByTouristId(Number(searchQuery), 0, 100);
+            if (searchType === 'passportId') {
+                data = await VisaAPI.searchByPassportId(Number(searchQuery), 0, 100);
             } else {
                 data = await VisaAPI.searchByVisaType(searchQuery, 0, 100);
             }
@@ -77,8 +77,11 @@ const VisaManagement: React.FC = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            const payloadPassportId = visaForm.passportId && visaForm.passportId !== '0' ? Number(visaForm.passportId) : null;
+            const payload = { ...visaForm, visaId: Number(visaForm.visaId || editingId), passportId: payloadPassportId };
+            
             if (editingId) {
-                await VisaAPI.updateVisa(editingId, { ...visaForm, visaId: editingId, touristId: Number(visaForm.touristId) });
+                await VisaAPI.updateVisa(editingId, payload);
                 Swal.fire({
                     icon: 'success',
                     title: 'Updated!',
@@ -88,7 +91,7 @@ const VisaManagement: React.FC = () => {
                     confirmButtonColor: '#3b82f6'
                 });
             } else {
-                await VisaAPI.createVisa({ ...visaForm, visaId: Number(visaForm.visaId), touristId: Number(visaForm.touristId) });
+                await VisaAPI.createVisa(payload);
                 Swal.fire({
                     icon: 'success',
                     title: 'Created!',
@@ -99,7 +102,7 @@ const VisaManagement: React.FC = () => {
                 });
             }
             // Reset form
-            setVisaForm({ visaId: '', touristId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
+            setVisaForm({ visaId: '', passportId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
             setEditingId(null);
             fetchVisas();
         } catch (error: any) {
@@ -116,14 +119,25 @@ const VisaManagement: React.FC = () => {
         }
     };
 
+    const formatDateForInput = (dateVal: any) => {
+        if (!dateVal) return '';
+        // If it's an array like [2026, 6, 15]
+        if (Array.isArray(dateVal)) {
+            const [y, m, d] = dateVal;
+            return `${y}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        }
+        // If it's already a string, just return it or slice it if needed
+        return String(dateVal).split('T')[0];
+    };
+
     const handleEditClick = (visa: any) => {
         setEditingId(visa.visaId);
         setVisaForm({
             visaId: visa.visaId.toString(),
-            touristId: visa.touristId?.toString() || '',
+            passportId: visa.passportId?.toString() || '',
             visaType: visa.visaType,
-            issueDate: visa.issueDate,
-            expiryDate: visa.expiryDate,
+            issueDate: formatDateForInput(visa.issueDate),
+            expiryDate: formatDateForInput(visa.expiryDate),
             status: visa.status
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -131,7 +145,7 @@ const VisaManagement: React.FC = () => {
 
     const handleCancelEdit = () => {
         setEditingId(null);
-        setVisaForm({ visaId: '', touristId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
+        setVisaForm({ visaId: '', passportId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
     };
 
     const handleDeleteVisa = async (id: number) => {
@@ -198,13 +212,13 @@ const VisaManagement: React.FC = () => {
                         <input type="number" disabled={!!editingId} required value={visaForm.visaId} onChange={e => setVisaForm({...visaForm, visaId: e.target.value})} className={`w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none ${editingId ? 'opacity-50 cursor-not-allowed' : ''}`} placeholder="e.g. 1001" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Assign to Tourist</label>
-                        <select required value={visaForm.touristId} onChange={e => setVisaForm({...visaForm, touristId: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none">
-                            <option value="" disabled>Select a tourist...</option>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Assign to Passport</label>
+                        <select required value={visaForm.passportId} onChange={e => setVisaForm({...visaForm, passportId: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none">
+                            <option value="" disabled>Select a passport...</option>
                             <option value="0" className="font-bold text-amber-400">Unassigned (Link Later)</option>
-                            {availableTourists.map(t => (
-                                <option key={t.touristId} value={t.touristId}>
-                                    {t.firstName} {t.lastName} (ID: {t.touristId})
+                            {availablePassports.map(p => (
+                                <option key={p.passportId} value={p.passportId}>
+                                    Passport #{p.passportNumber} (ID: {p.passportId})
                                 </option>
                             ))}
                         </select>
@@ -251,7 +265,7 @@ const VisaManagement: React.FC = () => {
                     
                     <form onSubmit={handleSearch} className="flex items-center gap-2">
                         <select value={searchType} onChange={e => setSearchType(e.target.value)} className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 outline-none focus:border-indigo-500">
-                            <option value="touristId">Tourist ID</option>
+                            <option value="passportId">Passport ID</option>
                             <option value="visaType">Visa Type</option>
                         </select>
                         <div className="relative flex-1">
@@ -274,7 +288,7 @@ const VisaManagement: React.FC = () => {
                         <thead>
                             <tr className="bg-slate-900/80 border-b border-glassborder text-slate-400 text-xs tracking-wider uppercase">
                                 <th className="p-4 font-medium">Visa ID</th>
-                                <th className="p-4 font-medium">Tourist ID</th>
+                                <th className="p-4 font-medium">Passport ID</th>
                                 <th className="p-4 font-medium">Type</th>
                                 <th className="p-4 font-medium">Issued</th>
                                 <th className="p-4 font-medium">Expires</th>
@@ -291,10 +305,10 @@ const VisaManagement: React.FC = () => {
                                 visas.map(v => (
                                     <tr key={v.visaId} className={`border-b border-glassborder transition-colors ${editingId === v.visaId ? 'bg-indigo-900/20' : 'hover:bg-slate-800/30'}`}>
                                         <td className="p-4 font-medium text-white">#{v.visaId}</td>
-                                        <td className="p-4 text-slate-300">#{v.touristId}</td>
+                                        <td className="p-4 text-slate-300">{v.passportId ? `#${v.passportId}` : 'Unassigned'}</td>
                                         <td className="p-4 text-slate-300">{v.visaType}</td>
-                                        <td className="p-4 text-slate-400">{v.issueDate}</td>
-                                        <td className="p-4 text-slate-400">{v.expiryDate}</td>
+                                        <td className="p-4 text-slate-400">{formatDateForInput(v.issueDate)}</td>
+                                        <td className="p-4 text-slate-400">{formatDateForInput(v.expiryDate)}</td>
                                         <td className="p-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${v.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400' : v.status === 'Expired' ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
                                                 {v.status}

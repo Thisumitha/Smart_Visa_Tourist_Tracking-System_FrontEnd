@@ -66,14 +66,14 @@ export const VisaAPI = {
     },
 
     /**
-     * Search visas by Tourist ID
+     * Search visas by Passport ID
      */
-    searchByTouristId: async (touristId: number, page = 0, size = 10) => {
+    searchByPassportId: async (passportId: number, page = 0, size = 10) => {
         try {
-            const response = await trackingApiClient.get(`/visas/search/tourist?touristId=${touristId}&page=${page}&size=${size}`);
+            const response = await trackingApiClient.get(`/visas/search/passport?passportId=${passportId}&page=${page}&size=${size}`);
             return response.data;
         } catch (error) {
-            console.error("Failed to search visas by tourist", error);
+            console.error("Failed to search visas by passport", error);
             throw error;
         }
     },

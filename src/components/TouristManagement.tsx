@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Globe, Users, Plus, Trash2, Edit2, X, Save } from 'lucide-react';
 import { TouristAPI } from '../api/tourist.api';
-import { VisaAPI } from '../api/visa.api';
 import Swal from 'sweetalert2';
 
 const TouristManagement: React.FC = () => {
@@ -12,25 +11,12 @@ const TouristManagement: React.FC = () => {
     // Tourist Form
     const [touristForm, setTouristForm] = useState({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
     const [editingId, setEditingId] = useState<number | null>(null);
-    const [selectedVisaId, setSelectedVisaId] = useState<string>('');
-    const [unassignedVisas, setUnassignedVisas] = useState<any[]>([]);
-    
     // UI states
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchManageTourists();
-        fetchUnassignedVisas();
     }, []);
-
-    const fetchUnassignedVisas = async () => {
-        try {
-            const data = await VisaAPI.searchByTouristId(0, 0, 100);
-            setUnassignedVisas(data.content || []);
-        } catch (error) {
-            console.error("Failed to fetch unassigned visas", error);
-        }
-    };
 
     const fetchManageTourists = async () => {
         setLoadingTourists(true);
@@ -51,9 +37,6 @@ const TouristManagement: React.FC = () => {
             if (editingId) {
                 // Update existing tourist
                 await TouristAPI.updateTourist(editingId, touristForm);
-                if (selectedVisaId) {
-                    await VisaAPI.partialUpdateVisa(Number(selectedVisaId), { touristId: editingId });
-                }
                 Swal.fire({
                     icon: 'success',
                     title: 'Updated!',
@@ -64,10 +47,7 @@ const TouristManagement: React.FC = () => {
                 });
             } else {
                 // Create new tourist
-                const newTourist = await TouristAPI.registerTourist(touristForm);
-                if (selectedVisaId && newTourist && newTourist.touristId) {
-                    await VisaAPI.partialUpdateVisa(Number(selectedVisaId), { touristId: newTourist.touristId });
-                }
+                await TouristAPI.registerTourist(touristForm);
                 Swal.fire({
                     icon: 'success',
                     title: 'Registered!',
@@ -79,10 +59,8 @@ const TouristManagement: React.FC = () => {
             }
             // Reset form
             setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
-            setSelectedVisaId('');
             setEditingId(null);
             fetchManageTourists(); // Refresh list
-            fetchUnassignedVisas(); // Refresh visas
         } catch (error: any) {
             Swal.fire({
                 icon: 'error',
@@ -106,14 +84,12 @@ const TouristManagement: React.FC = () => {
             dateOfBirth: tourist.dateOfBirth,
             gender: tourist.gender || 'Male'
         });
-        setSelectedVisaId('');
         window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll up to the form
     };
 
     const handleCancelEdit = () => {
         setEditingId(null);
         setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
-        setSelectedVisaId('');
     };
 
     const handleDeleteTourist = async (id: number) => {
@@ -199,17 +175,6 @@ const TouristManagement: React.FC = () => {
                             <option>Male</option>
                             <option>Female</option>
                             <option>Other</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Assign Visa (Optional)</label>
-                        <select value={selectedVisaId} onChange={e => setSelectedVisaId(e.target.value)} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
-                            <option value="">Leave Unassigned...</option>
-                            {unassignedVisas.map(v => (
-                                <option key={v.visaId} value={v.visaId}>
-                                    Visa #{v.visaId} ({v.visaType})
-                                </option>
-                            ))}
                         </select>
                     </div>
                     <div className="md:col-span-2 flex justify-end mt-4">

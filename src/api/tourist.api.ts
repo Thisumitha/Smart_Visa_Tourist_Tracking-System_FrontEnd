@@ -78,3 +78,69 @@ export const TouristAPI = {
         }
     }
 };
+
+export const PassportAPI = {
+    /**
+     * Create a new passport for a tourist
+     */
+    createPassport: async (touristId: number, passportData: any) => {
+        try {
+            const response = await touristApiClient.post(`/passports/tourist/${touristId}`, passportData);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to create passport", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get all passports
+     */
+    getAllPassports: async () => {
+        try {
+            const response = await touristApiClient.get(`/passports`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch all passports", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get passports for a specific tourist
+     */
+    getPassportsByTouristId: async (touristId: number) => {
+        try {
+            const response = await touristApiClient.get(`/passports/tourist/${touristId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch passports", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Update an existing passport
+     */
+    updatePassport: async (id: number, touristId: number, passportData: any) => {
+        try {
+            const response = await touristApiClient.put(`/passports/${id}/tourist/${touristId}`, passportData);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to update passport", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Delete a passport
+     */
+    deletePassport: async (id: number) => {
+        try {
+            await touristApiClient.delete(`/passports/${id}`);
+        } catch (error) {
+            console.error("Failed to delete passport", error);
+            throw error;
+        }
+    }
+};

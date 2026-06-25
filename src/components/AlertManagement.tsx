@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AlertTriangle, Clock, Trash2, CheckCircle, RefreshCcw, Eye, X } from 'lucide-react';
 import { AlertAPI } from '../api/alert.api';
-import { TouristAPI } from '../api/tourist.api';
+import { TouristAPI, PassportAPI } from '../api/tourist.api';
 import { VisaAPI } from '../api/visa.api';
 
 interface Alert {
@@ -96,8 +96,12 @@ const AlertManagement: React.FC = () => {
         setModalLoading(true);
         try {
             setModalTourist(tourists[alert.touristId] || null);
-            const visaData = await VisaAPI.searchByTouristId(alert.touristId);
-            setModalVisas(visaData.content ? visaData.content : visaData);
+            const passportsData = await PassportAPI.getPassportsByTouristId(alert.touristId);
+            const passports = passportsData.content ? passportsData.content : passportsData;
+            const visaPromises = passports.map((p: any) => VisaAPI.searchByPassportId(p.passportId));
+            const visaResults = await Promise.all(visaPromises);
+            const allVisas = visaResults.flatMap((res: any) => res.content ? res.content : res);
+            setModalVisas(allVisas);
         } catch (err) {
             console.error("Failed to fetch details", err);
         } finally {
