@@ -1,9 +1,8 @@
-import axios from 'axios';
-import { ALERT_API_URL } from '../config/api.config';
+import { alertApiClient } from '../config/api.config';
 
 export const AlertAPI = {
     getAllAlerts: async (page = 0, size = 20) => {
-        const response = await axios.get(`${ALERT_API_URL}/v1/alerts/get-all`, {
+        const response = await alertApiClient.get(`/v1/alerts/get-all`, {
             params: {
                 page,
                 size
@@ -13,7 +12,7 @@ export const AlertAPI = {
     },
 
     deleteAlert: async (id: number) => {
-        const response = await axios.delete(`${ALERT_API_URL}/v1/alerts/delete/${id}`);
+        const response = await alertApiClient.delete(`/v1/alerts/delete/${id}`);
         return response.data;
     }
 };
