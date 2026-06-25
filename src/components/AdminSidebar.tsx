@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Activity, Globe, UserPlus, Briefcase, Building2, LogOut, FileText, Bell, Book } from 'lucide-react';
+import { ShieldCheck, Activity, Globe, UserPlus, Briefcase, Building2, LogOut, FileText, Bell, Book, History } from 'lucide-react';
 
 interface AdminSidebarProps {
     activeTab: string;
@@ -18,6 +18,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChange }) =
     const navItems = [
         { id: 'overview', label: 'System Overview', icon: <Activity size={20} />, activeColor: 'bg-blue-600/20 text-blue-400 border-blue-500/30' },
         { id: 'wizard', label: 'New Registration', icon: <UserPlus size={20} />, activeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+        { id: 'tourist-overview', label: 'Tourist Overview', icon: <Globe size={20} />, activeColor: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
+        { id: 'airport-duty', label: 'Airport Duty', icon: <ShieldCheck size={20} />, activeColor: 'bg-blue-600/20 text-blue-400 border-blue-500/30' },
+        { id: 'travel-logs', label: 'Travel Logs', icon: <History size={20} />, activeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
         { id: 'tourists', label: 'Manage Tourists', icon: <Globe size={20} />, activeColor: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
         { id: 'passports', label: 'Manage Passports', icon: <Book size={20} />, activeColor: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
         { id: 'visas', label: 'Manage Visas', icon: <FileText size={20} />, activeColor: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },

@@ -10,12 +10,14 @@ import VisaManagement from '../../components/VisaManagement';
 import AlertManagement from '../../components/AlertManagement';
 import RegistrationWizard from '../../components/RegistrationWizard';
 import PassportManagement from '../../components/PassportManagement';
+import TouristOverview from '../../components/TouristOverview';
+import AirportDuty from '../../components/AirportDuty';
+import TravelLogs from '../../components/TravelLogs';
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
     const { tab } = useParams<{ tab: string }>();
     const activeTab = tab || 'overview';
-    
     
     // Overview Data
     const [tourists, setTourists] = useState<any[]>([]);
@@ -164,6 +166,18 @@ const AdminDashboard: React.FC = () => {
 
         if (activeTab === 'wizard') {
             return <RegistrationWizard />;
+        }
+
+        if (activeTab === 'tourist-overview') {
+            return <TouristOverview />;
+        }
+
+        if (activeTab === 'airport-duty') {
+            return <AirportDuty />;
+        }
+
+        if (activeTab === 'travel-logs') {
+            return <TravelLogs />;
         }
 
         if (activeTab === 'tourists') {

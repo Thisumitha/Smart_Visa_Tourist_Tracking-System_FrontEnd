@@ -1,0 +1,258 @@
+import React, { useEffect, useState } from 'react';
+import { Search, Globe, CreditCard, FileText, ChevronDown, ChevronUp, User } from 'lucide-react';
+import { TouristAPI, PassportAPI } from '../api/tourist.api';
+import { VisaAPI } from '../api/visa.api';
+
+interface Tourist {
+    touristId: number;
+    firstName: string;
+    lastName: string;
+    nationality: string;
+    dateOfBirth: string;
+    gender: string;
+}
+
+interface Passport {
+    passportId: number;
+    touristId: number;
+    passportNumber: string;
+    issueDate: string;
+    expiryDate: string;
+}
+
+interface Visa {
+    visaId: number;
+    passportId: number;
+    visaType: string;
+    issueDate: string;
+    expiryDate: string;
+    status: string;
+}
+
+const TouristOverview: React.FC = () => {
+    const [tourists, setTourists] = useState<Tourist[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // State for expanded tourist rows
+    const [expandedTourist, setExpandedTourist] = useState<number | null>(null);
+    const [passportsMap, setPassportsMap] = useState<Record<number, Passport[]>>({});
+    const [loadingPassports, setLoadingPassports] = useState<Record<number, boolean>>({});
+
+    // State for expanded passports (to load their visas)
+    const [visasMap, setVisasMap] = useState<Record<number, Visa[]>>({});
+    const [loadingVisas, setLoadingVisas] = useState<Record<number, boolean>>({});
+
+    useEffect(() => {
+        fetchTourists();
+    }, []);
+
+    const fetchTourists = async () => {
+        setLoading(true);
+        try {
+            const data = await TouristAPI.getAllTourists();
+            setTourists(data.content ? data.content : data);
+        } catch (err) {
+            console.error("Failed to fetch tourists", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Since we don't have a complex backend search across all fields yet,
+        // we'll fetch all and filter in memory for simplicity in this overview.
+        // If the backend has a search endpoint, we would call it here.
+    };
+
+    const toggleTourist = async (touristId: number) => {
+        if (expandedTourist === touristId) {
+            setExpandedTourist(null);
+            return;
+        }
+        
+        setExpandedTourist(touristId);
+
+        // Fetch passports if not already cached
+        if (!passportsMap[touristId]) {
+            setLoadingPassports(prev => ({ ...prev, [touristId]: true }));
+            try {
+                const data = await PassportAPI.getPassportsByTouristId(touristId);
+                const passports: Passport[] = data.content ? data.content : data;
+                setPassportsMap(prev => ({ ...prev, [touristId]: passports }));
+
+                // Eagerly fetch Visas for these passports
+                passports.forEach(p => {
+                    fetchVisasForPassport(p.passportId);
+                });
+            } catch (err) {
+                console.error(`Failed to fetch passports for tourist ${touristId}`, err);
+            } finally {
+                setLoadingPassports(prev => ({ ...prev, [touristId]: false }));
+            }
+        }
+    };
+
+    const fetchVisasForPassport = async (passportId: number) => {
+        if (visasMap[passportId]) return; // Already cached
+        
+        setLoadingVisas(prev => ({ ...prev, [passportId]: true }));
+        try {
+            const data = await VisaAPI.searchByPassportId(passportId, 0, 100);
+            setVisasMap(prev => ({ ...prev, [passportId]: data.content ? data.content : data }));
+        } catch (err) {
+            console.error(`Failed to fetch visas for passport ${passportId}`, err);
+        } finally {
+            setLoadingVisas(prev => ({ ...prev, [passportId]: false }));
+        }
+    };
+
+    const filteredTourists = tourists.filter(t => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        return (
+            t.firstName.toLowerCase().includes(q) ||
+            t.lastName.toLowerCase().includes(q) ||
+            t.nationality.toLowerCase().includes(q) ||
+            t.touristId.toString() === q
+        );
+    });
+
+    return (
+        <div className="space-y-6 max-w-6xl mx-auto w-full">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel p-6 rounded-2xl">
+                <div>
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                        <Globe className="text-indigo-400" /> Unified Tourist Overview
+                    </h2>
+                    <p className="text-slate-400 mt-1 text-sm">Search and view comprehensive details of tourists, passports, and visas.</p>
+                </div>
+                
+                <form onSubmit={handleSearch} className="flex-1 max-w-md">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="Search by Name, Nationality, or ID..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-white outline-none focus:border-indigo-500 transition-colors"
+                        />
+                    </div>
+                </form>
+            </div>
+
+            <div className="space-y-4">
+                {loading ? (
+                    <div className="glass-panel p-8 rounded-2xl text-center text-slate-400 animate-pulse">
+                        Loading tourists...
+                    </div>
+                ) : filteredTourists.length === 0 ? (
+                    <div className="glass-panel p-8 rounded-2xl text-center text-slate-400">
+                        No tourists found matching your search.
+                    </div>
+                ) : (
+                    filteredTourists.map(tourist => (
+                        <div key={tourist.touristId} className="glass-panel rounded-2xl overflow-hidden border border-slate-700/50 transition-all duration-300">
+                            {/* Tourist Header (Clickable) */}
+                            <div 
+                                onClick={() => toggleTourist(tourist.touristId)}
+                                className={`p-5 flex items-center justify-between cursor-pointer transition-colors ${expandedTourist === tourist.touristId ? 'bg-indigo-900/30 border-b border-slate-700/50' : 'hover:bg-slate-800/40'}`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xl border border-indigo-500/30">
+                                        {tourist.firstName.charAt(0)}{tourist.lastName.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                            {tourist.firstName} {tourist.lastName}
+                                            <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">ID: #{tourist.touristId}</span>
+                                        </h3>
+                                        <div className="flex items-center gap-3 text-sm text-slate-400 mt-1">
+                                            <span className="flex items-center gap-1"><Globe size={14}/> {tourist.nationality}</span>
+                                            <span className="flex items-center gap-1"><User size={14}/> {tourist.gender}</span>
+                                            <span>DOB: {tourist.dateOfBirth}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-slate-500 p-2">
+                                    {expandedTourist === tourist.touristId ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                                </div>
+                            </div>
+
+                            {/* Expanded Content: Passports and Visas */}
+                            {expandedTourist === tourist.touristId && (
+                                <div className="p-6 bg-slate-900/40">
+                                    <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                        <CreditCard size={16} className="text-amber-400"/> Assigned Passports
+                                    </h4>
+
+                                    {loadingPassports[tourist.touristId] ? (
+                                        <div className="text-slate-500 text-sm animate-pulse ml-6">Loading passports...</div>
+                                    ) : passportsMap[tourist.touristId]?.length === 0 ? (
+                                        <div className="text-slate-500 text-sm italic ml-6">No passports found for this tourist.</div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                            {passportsMap[tourist.touristId]?.map(passport => (
+                                                <div key={passport.passportId} className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 flex flex-col h-full">
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-white font-bold text-lg">{passport.passportNumber}</span>
+                                                                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">ID: #{passport.passportId}</span>
+                                                            </div>
+                                                            <p className="text-xs text-slate-400 mt-1">Issued: {passport.issueDate} &bull; Expires: {passport.expiryDate}</p>
+                                                        </div>
+                                                        <CreditCard className="text-slate-500" size={24} />
+                                                    </div>
+
+                                                    <div className="flex-1 bg-slate-900/60 rounded-lg p-4 border border-slate-700/30">
+                                                        <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                            <FileText size={14} className="text-emerald-400"/> Linked Visas
+                                                        </h5>
+                                                        
+                                                        {loadingVisas[passport.passportId] ? (
+                                                            <div className="text-slate-500 text-xs animate-pulse">Loading visas...</div>
+                                                        ) : visasMap[passport.passportId]?.length === 0 ? (
+                                                            <div className="text-slate-500 text-xs italic">No visas attached to this passport.</div>
+                                                        ) : (
+                                                            <div className="space-y-2">
+                                                                {visasMap[passport.passportId]?.map(visa => (
+                                                                    <div key={visa.visaId} className="flex justify-between items-center bg-slate-800/80 p-3 rounded-lg border border-slate-700/50">
+                                                                        <div>
+                                                                            <p className="text-sm font-medium text-white flex items-center gap-2">
+                                                                                {visa.visaType} Visa
+                                                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">#{visa.visaId}</span>
+                                                                            </p>
+                                                                            <p className="text-[11px] text-slate-400 mt-0.5">{visa.issueDate} &rarr; {visa.expiryDate}</p>
+                                                                        </div>
+                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                                                            visa.status === 'Active' 
+                                                                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                                                                : visa.status === 'Expired'
+                                                                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                                                                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                                                        }`}>
+                                                                            {visa.status}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default TouristOverview;
