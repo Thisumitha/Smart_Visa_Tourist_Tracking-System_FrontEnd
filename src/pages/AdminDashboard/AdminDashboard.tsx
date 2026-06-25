@@ -7,6 +7,7 @@ import { PartnerAPI } from '../../api/partner.api';
 import AdminSidebar from '../../components/AdminSidebar';
 import TouristManagement from '../../components/TouristManagement';
 import VisaManagement from '../../components/VisaManagement';
+import AlertManagement from '../../components/AlertManagement';
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -165,6 +166,10 @@ const AdminDashboard: React.FC = () => {
 
         if (activeTab === 'visas') {
             return <VisaManagement />;
+        }
+
+        if (activeTab === 'alerts') {
+            return <AlertManagement />;
         }
 
         if (activeTab === 'users') {
