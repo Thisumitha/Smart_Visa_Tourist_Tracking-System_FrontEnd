@@ -13,6 +13,7 @@ import PassportManagement from '../../components/PassportManagement';
 import TouristOverview from '../../components/TouristOverview';
 import AirportDuty from '../../components/AirportDuty';
 import TravelLogs from '../../components/TravelLogs';
+import VisaDashboard from '../../components/Dashboard/VisaDashboard';
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -108,6 +109,10 @@ const AdminDashboard: React.FC = () => {
     };
 
     const renderContent = () => {
+        if (activeTab === 'dashboard') {
+            return <VisaDashboard />;
+        }
+
         if (activeTab === 'overview') {
             return (
                 <div className="space-y-8">
@@ -312,7 +317,7 @@ const AdminDashboard: React.FC = () => {
             <main className="flex-1 flex flex-col h-screen overflow-hidden">
                 <header className="h-20 glass-panel border-x-0 border-t-0 rounded-none flex items-center justify-between px-8 z-10">
                     <h2 className="text-xl font-semibold text-white capitalize">
-                        {activeTab === 'overview' ? 'System Overview' : `Manage ${activeTab}`}
+                        {activeTab === 'overview' ? 'System Overview' : activeTab === 'dashboard' ? 'Visa Tracking Dashboard' : `Manage ${activeTab}`}
                     </h2>
                     <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-slate-800 shadow-lg">
