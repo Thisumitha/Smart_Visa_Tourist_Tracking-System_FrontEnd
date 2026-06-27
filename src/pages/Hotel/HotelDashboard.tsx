@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { TouristAPI } from '../../api/tourist.api';
-import { TrackingAPI } from '../../api/tracking.api';
+import { TouristAPI, PassportAPI } from '../../api/tourist.api';
+import { HotelCheckInAPI, HotelAPI } from '../../api/partner.api';
+import { VisaAPI } from '../../api/visa.api';
 import { Building2, Search, UserCheck, MapPin, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,6 +13,23 @@ const HotelDashboard: React.FC = () => {
     const [checkingIn, setCheckingIn] = useState(false);
     const [statusMsg, setStatusMsg] = useState('');
 
+    const [hotelId, setHotelId] = useState<number | null>(null);
+
+    React.useEffect(() => {
+        const fetchHotelId = async () => {
+            try {
+                const hotelsData = await HotelAPI.getAllHotels();
+                const hotels = Array.isArray(hotelsData) ? hotelsData : (hotelsData?.content || []);
+                if (hotels.length > 0) {
+                    setHotelId(hotels[0].hotelId);
+                }
+            } catch (error) {
+                console.error("Failed to fetch hotel ID", error);
+            }
+        };
+        fetchHotelId();
+    }, []);
+
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!passport) return;
@@ -19,25 +37,33 @@ const HotelDashboard: React.FC = () => {
         setTourist(null);
         setStatusMsg('');
         try {
-            const data = await TouristAPI.getTouristByPassport(passport);
-            setTourist(data);
+            const data = await TouristAPI.getHotelTouristView(passport);
+            
+            // Format for display
+            setTourist({
+                touristId: data.touristId,
+                fullName: `${data.firstName} ${data.lastName}`,
+                visaStatus: data.visaStatus
+            });
         } catch (error) {
-            setStatusMsg('Tourist not found. Please check the passport number.');
+            console.error("Error retrieving tourist data", error);
+            setStatusMsg('Tourist not found or error retrieving data.');
         } finally {
             setSearching(false);
         }
     };
 
     const handleCheckIn = async () => {
-        if (!tourist) return;
+        if (!tourist || !hotelId) return;
         setCheckingIn(true);
         try {
-            await TrackingAPI.logLocation({ touristId: tourist.id, locationType: 'HOTEL', locationId: 'HOTEL_A1' });
-            setStatusMsg(`Successfully checked in ${tourist.fullName}. Location tracked.`);
+            await HotelCheckInAPI.checkInTourist(hotelId, tourist.touristId);
+            // Also log tracking if needed, but for now we just do checkin
+            setStatusMsg(`Successfully checked in ${tourist.fullName}.`);
             setTourist(null);
             setPassport('');
-        } catch (error) {
-            setStatusMsg('Failed to log check-in.');
+        } catch (error: any) {
+            setStatusMsg(error.response?.data || 'Failed to check-in tourist.');
         } finally {
             setCheckingIn(false);
         }
@@ -99,16 +125,10 @@ const HotelDashboard: React.FC = () => {
                                         <div className="font-medium text-slate-200">{tourist.fullName}</div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Nationality</div>
-                                        <div className="font-medium text-slate-200">{tourist.nationality}</div>
-                                    </div>
-                                    <div>
                                         <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Visa Status</div>
-                                        <div className="font-medium text-emerald-400">{tourist.visaStatus}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Behavior Score</div>
-                                        <div className="font-medium text-blue-400">{tourist.behaviorScore}/100</div>
+                                        <div className={`font-medium ${tourist.visaStatus?.toLowerCase().includes('expire') ? 'text-red-400' : 'text-emerald-400'}`}>
+                                            {tourist.visaStatus}
+                                        </div>
                                     </div>
                                 </div>
                                 

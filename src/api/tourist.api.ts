@@ -28,6 +28,19 @@ export const TouristAPI = {
     },
 
     /**
+     * Get a tourist by ID
+     */
+    getTouristById: async (id: number) => {
+        try {
+            const response = await touristApiClient.get(`/tourists/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Failed to fetch tourist with ID ${id}`, error);
+            throw error;
+        }
+    },
+
+    /**
      * Admin: Update a tourist
      */
     updateTourist: async (id: number, touristData: any) => {
@@ -57,11 +70,6 @@ export const TouristAPI = {
      */
     getTouristByPassport: async (passportNumber: string) => {
         try {
-            // Note: Currently tourist-service doesn't have a direct "search by passport" endpoint.
-            // When backend implements GET /tourists/search?passport=X, uncomment this:
-            // const response = await touristApiClient.get(`/tourists/search?passport=${passportNumber}`);
-            // return response.data;
-            
             return new Promise(resolve => {
                 setTimeout(() => resolve({ 
                     id: 1234, 
@@ -74,6 +82,19 @@ export const TouristAPI = {
             });
         } catch (error) {
             console.error("Failed to find tourist", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Hotel: Safe view of tourist by passport number
+     */
+    getHotelTouristView: async (passportNumber: string) => {
+        try {
+            const response = await touristApiClient.get(`/tourists/hotel-view?passportNumber=${passportNumber}`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch hotel tourist view", error);
             throw error;
         }
     }

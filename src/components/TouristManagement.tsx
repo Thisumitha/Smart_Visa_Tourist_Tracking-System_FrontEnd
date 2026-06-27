@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Globe, Users, Plus, Trash2, Edit2, X, Save, Building } from 'lucide-react';
+import { Globe, Users, Plus, Trash2, Edit2, X, Save, Building, MapPin } from 'lucide-react';
 import { TouristAPI } from '../api/tourist.api';
 import { PartnerAPI } from '../api/partner.api';
 import Swal from 'sweetalert2';
@@ -23,6 +23,12 @@ const TouristManagement: React.FC = () => {
     const [isAssigning, setIsAssigning] = useState(false);
     const [isReassigningMode, setIsReassigningMode] = useState(false);
     const [touristAgencyMap, setTouristAgencyMap] = useState<Record<number, any>>({});
+
+    // Travel History States
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [selectedTouristForHistory, setSelectedTouristForHistory] = useState<any>(null);
+    const [travelHistory, setTravelHistory] = useState<any[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
 
     useEffect(() => {
         fetchManageTourists();
@@ -227,6 +233,32 @@ const TouristManagement: React.FC = () => {
         }
     };
 
+    const handleViewTravelHistory = async (tourist: any) => {
+        setSelectedTouristForHistory(tourist);
+        setIsHistoryModalOpen(true);
+        setLoadingHistory(true);
+        setTravelHistory([]);
+        try {
+            const history = await PartnerAPI.getTouristTravelHistory(tourist.touristId);
+            // Sort by latest check-in date
+            const sortedHistory = (history || []).sort((a: any, b: any) => {
+                return new Date(b.checkInDate).getTime() - new Date(a.checkInDate).getTime();
+            });
+            setTravelHistory(sortedHistory);
+        } catch (error) {
+            console.error("Failed to fetch history", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Could not load travel history.',
+                background: '#0f172a',
+                color: '#fff'
+            });
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
     return (
         <div className="space-y-8 w-full">
             {/* Create / Edit Tourist Form */}
@@ -311,6 +343,9 @@ const TouristManagement: React.FC = () => {
                                         <td className="p-4 text-slate-400">{t.dateOfBirth}</td>
                                         <td className="p-4 text-slate-400">{t.gender}</td>
                                         <td className="p-4 text-right flex justify-end gap-2">
+                                            <button onClick={() => handleViewTravelHistory(t)} className="text-emerald-400 hover:text-emerald-300 p-2 rounded-lg hover:bg-emerald-500/10 transition-colors" title="View Travel History">
+                                                <MapPin size={16} />
+                                            </button>
                                             <button onClick={() => handleAssignAgencyClick(t)} className="text-purple-400 hover:text-purple-300 p-2 rounded-lg hover:bg-purple-500/10 transition-colors" title="Assign Agency">
                                                 <Building size={16} />
                                             </button>
@@ -375,6 +410,56 @@ const TouristManagement: React.FC = () => {
                                     {isAssigning ? (isReassigningMode ? 'Re-assigning...' : 'Assigning...') : <><Save size={16} /> {isReassigningMode ? 'Re-assign' : 'Assign'}</>}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Travel History Modal */}
+            {isHistoryModalOpen && selectedTouristForHistory && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+                    <div className="glass-panel w-full max-w-2xl p-6 rounded-2xl border border-slate-700/50 shadow-2xl relative">
+                        <button onClick={() => setIsHistoryModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                            <X size={20} />
+                        </button>
+                        
+                        <div className="mb-6">
+                            <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-4">
+                                <MapPin size={24} />
+                            </div>
+                            <h2 className="text-xl font-bold text-white">Travel History</h2>
+                            <p className="text-sm text-slate-400 mt-1">Showing checked-in hotels for <span className="font-semibold text-slate-300">{selectedTouristForHistory.firstName} {selectedTouristForHistory.lastName}</span></p>
+                        </div>
+
+                        <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-900/80 border-b border-glassborder text-slate-400 text-xs tracking-wider uppercase">
+                                        <th className="p-4 font-medium">Hotel Name</th>
+                                        <th className="p-4 font-medium">Check-In Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loadingHistory ? (
+                                        <tr><td colSpan={2} className="p-8 text-center text-slate-500">Loading travel history...</td></tr>
+                                    ) : travelHistory.length === 0 ? (
+                                        <tr><td colSpan={2} className="p-8 text-center text-amber-400/80 bg-amber-500/10">No travel history found. Tourist has not checked into any hotels yet.</td></tr>
+                                    ) : (
+                                        travelHistory.map((history, idx) => (
+                                            <tr key={idx} className="border-b border-glassborder hover:bg-slate-800/30 transition-colors">
+                                                <td className="p-4 font-medium text-emerald-400">{history.hotelName}</td>
+                                                <td className="p-4 text-slate-300">{new Date(history.checkInDate).toLocaleString()}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="mt-6 flex justify-end">
+                            <button onClick={() => setIsHistoryModalOpen(false)} className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium transition-colors">
+                                Close
+                            </button>
                         </div>
                     </div>
                 </div>
