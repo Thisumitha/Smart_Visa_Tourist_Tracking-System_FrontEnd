@@ -14,6 +14,7 @@ import TouristOverview from '../../components/TouristOverview';
 import AirportDuty from '../../components/AirportDuty';
 import TravelLogs from '../../components/TravelLogs';
 import VisaDashboard from '../../components/Dashboard/VisaDashboard';
+import AgencyManagement from '../../components/AgencyManagement';
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -236,38 +237,7 @@ const AdminDashboard: React.FC = () => {
         }
 
         if (activeTab === 'agencies') {
-            return (
-                <div className="max-w-2xl mx-auto">
-                    <div className="glass-panel rounded-2xl p-8">
-                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                            <Briefcase className="text-indigo-400" /> Register Travel Agency
-                        </h2>
-                        {registerStatus && <div className="mb-6 p-4 bg-indigo-500/10 text-indigo-400 rounded-xl text-sm font-medium border border-indigo-500/20">{registerStatus}</div>}
-                        
-                        <form onSubmit={handleRegisterAgency} className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Agency Name</label>
-                                <input type="text" required value={agencyForm.name} onChange={e => setAgencyForm({...agencyForm, name: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Lanka Tours Pvt Ltd" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">License Number</label>
-                                <input type="text" required value={agencyForm.license} onChange={e => setAgencyForm({...agencyForm, license: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="SLTBA-12345" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Contact Email (Login ID)</label>
-                                <input type="email" required value={agencyForm.email} onChange={e => setAgencyForm({...agencyForm, email: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="contact@lankatours.com" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Account Password</label>
-                                <input type="password" required value={agencyForm.password} onChange={e => setAgencyForm({...agencyForm, password: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="••••••••" />
-                            </div>
-                            <button type="submit" disabled={isRegistering} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all flex justify-center items-center gap-2">
-                                {isRegistering ? 'Registering...' : <><Plus size={18} /> Register Agency Profile & Account</>}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            );
+            return <AgencyManagement />;
         }
 
         if (activeTab === 'hotels') {
