@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Globe, Users, Plus, Trash2, Edit2, X, Save, Building, MapPin } from 'lucide-react';
+import { Globe, Users, Plus, Trash2, Edit2, X, Save, Building, MapPin, Search } from 'lucide-react';
 import { TouristAPI } from '../api/tourist.api';
 import { PartnerAPI, HotelCheckInAPI } from '../api/partner.api';
 import Swal from 'sweetalert2';
@@ -10,6 +10,7 @@ const TouristManagement: React.FC = () => {
     const [loadingTourists, setLoadingTourists] = useState(false);
 
     // Tourist Form
+    const [searchQuery, setSearchQuery] = useState('');
     const [touristForm, setTouristForm] = useState({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
     const [editingId, setEditingId] = useState<number | null>(null);
     // UI states
@@ -259,6 +260,12 @@ const TouristManagement: React.FC = () => {
         }
     };
 
+    const filteredTourists = manageTourists.filter(t => 
+        `${t.firstName} ${t.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.nationality.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.touristId.toString().includes(searchQuery)
+    );
+
     return (
         <div className="space-y-8 w-full">
             {/* Create / Edit Tourist Form */}
@@ -313,9 +320,21 @@ const TouristManagement: React.FC = () => {
 
             {/* Tourist List Table */}
             <div className="glass-panel rounded-2xl max-w-4xl mx-auto w-full overflow-hidden border border-slate-700/50">
-                <div className="p-6 border-b border-glassborder flex justify-between items-center bg-slate-900/50">
+                <div className="p-6 border-b border-glassborder flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/50">
                     <h3 className="text-lg font-medium text-white flex items-center gap-2"><Users className="text-slate-400" size={18}/> Tourist Database</h3>
-                    <button onClick={fetchManageTourists} className="text-sm text-emerald-400 hover:text-emerald-300">Refresh</button>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="relative w-full md:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                            <input 
+                                type="text" 
+                                placeholder="Search ID, name, or nationality..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                        </div>
+                        <button onClick={fetchManageTourists} className="text-sm px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-emerald-400 hover:text-emerald-300 transition-colors whitespace-nowrap">Refresh</button>
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
@@ -332,10 +351,10 @@ const TouristManagement: React.FC = () => {
                         <tbody>
                             {loadingTourists ? (
                                 <tr><td colSpan={6} className="p-8 text-center text-slate-500">Loading database...</td></tr>
-                            ) : manageTourists.length === 0 ? (
-                                <tr><td colSpan={6} className="p-8 text-center text-slate-500">No tourists found.</td></tr>
+                            ) : filteredTourists.length === 0 ? (
+                                <tr><td colSpan={6} className="p-8 text-center text-slate-500">{searchQuery ? 'No tourists match your search.' : 'No tourists found.'}</td></tr>
                             ) : (
-                                manageTourists.map(t => (
+                                filteredTourists.map(t => (
                                     <tr key={t.touristId} className={`border-b border-glassborder transition-colors ${editingId === t.touristId ? 'bg-blue-900/20' : 'hover:bg-slate-800/30'}`}>
                                         <td className="p-4 text-slate-400">#{t.touristId}</td>
                                         <td className="p-4 font-medium text-white">{t.firstName} {t.lastName}</td>

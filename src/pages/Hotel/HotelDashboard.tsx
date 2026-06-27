@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { TouristAPI, PassportAPI } from '../../api/tourist.api';
+import { TouristAPI } from '../../api/tourist.api';
 import { HotelCheckInAPI, HotelAPI } from '../../api/partner.api';
-import { VisaAPI } from '../../api/visa.api';
+
 import { Building2, Search, UserCheck, MapPin, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
