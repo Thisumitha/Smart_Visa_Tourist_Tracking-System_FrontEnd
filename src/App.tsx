@@ -26,8 +26,10 @@ function App() {
                 <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
                 <Route path="/admin/:tab" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
                 <Route path="/immigration" element={<PrivateRoute><ImmigrationDashboard /></PrivateRoute>} />
+                <Route path="/immigration/:tab" element={<PrivateRoute><ImmigrationDashboard /></PrivateRoute>} />
                 <Route path="/hotel" element={<PrivateRoute><HotelDashboard /></PrivateRoute>} />
                 <Route path="/agency" element={<PrivateRoute><AgencyDashboard /></PrivateRoute>} />
+                <Route path="/agency/:tab" element={<PrivateRoute><AgencyDashboard /></PrivateRoute>} />
 
                 {/* Catch-all route */}
                 <Route path="*" element={<Navigate to="/login" />} />

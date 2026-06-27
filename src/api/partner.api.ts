@@ -1,4 +1,6 @@
 import { partnerApiClient } from '../config/api.config';
+import { TouristAPI, PassportAPI } from './tourist.api';
+import { VisaAPI } from './visa.api';
 
 export const PartnerAPI = {
     /**
@@ -96,18 +98,116 @@ export const PartnerAPI = {
      */
     getAgencyTourists: async () => {
         try {
-            // const response = await partnerApiClient.get('/agencies/my-tourists');
-            // return response.data;
+            // Since we don't have the exact agencyId from the JWT yet, we pick the first agency to demonstrate
+            const agenciesData = await PartnerAPI.getAllAgencies();
+            const agencies = Array.isArray(agenciesData) ? agenciesData : (agenciesData?.content || []);
+            if (agencies.length === 0) return [];
             
-            return new Promise(resolve => {
-                setTimeout(() => resolve([
-                    { id: 1, name: "Alexander Pierce", passport: "GB123456", itinerary: "Colombo -> Kandy -> Ella", status: "On Tour" },
-                    { id: 2, name: "Maria Garcia", passport: "ES987654", itinerary: "Galle -> Mirissa", status: "Pending Arrival" },
-                    { id: 3, name: "Yuki Tanaka", passport: "JP555666", itinerary: "Sigiriya -> Polonnaruwa", status: "Completed" }
-                ]), 800);
-            });
+            const myAgencyId = agencies[0].agencyId; 
+
+            // Get assigned tourist IDs
+            const assignedIdsData = await PartnerAPI.getAssignedTourists(myAgencyId);
+            const assignedIds = Array.isArray(assignedIdsData) ? assignedIdsData : (assignedIdsData?.content || []);
+            if (assignedIds.length === 0) return [];
+
+            // Fetch all tourists and filter
+            const allTouristsData = await TouristAPI.getAllTourists();
+            const allTourists = Array.isArray(allTouristsData) ? allTouristsData : (allTouristsData?.content || []);
+            
+            const myTourists = allTourists.filter((t: any) => assignedIds.includes(t.touristId));
+
+            // Map full details
+            const detailedTourists = await Promise.all(myTourists.map(async (t: any) => {
+                // Fetch passports
+                let passportsList: any[] = [];
+                try {
+                    const passports = await PassportAPI.getPassportsByTouristId(t.touristId);
+                    if (passports && passports.length > 0) {
+                        passportsList = passports;
+                    }
+                } catch(e) {}
+
+                // Fetch visas
+                let visasList: any[] = [];
+                let status = 'Registered';
+                try {
+                    const visasData = await VisaAPI.getAllVisas(0, 100);
+                    const allVisas = Array.isArray(visasData) ? visasData : (visasData?.content || []);
+                    visasList = allVisas.filter((v: any) => {
+                        return v.touristId === t.touristId || passportsList.some(p => p.passportId === v.passportId);
+                    });
+                    if (visasList.length > 0) {
+                        status = 'Visa Issued';
+                    }
+                } catch(e) {}
+
+                return {
+                    id: t.touristId,
+                    name: `${t.firstName} ${t.lastName}`,
+                    nationality: t.nationality,
+                    passports: passportsList,
+                    visas: visasList,
+                    status
+                };
+            }));
+
+            return detailedTourists;
+            
         } catch (error) {
             console.error("Failed to get agency tourists", error);
+            throw error;
+        }
+    }
+};
+
+export const HotelAPI = {
+    /**
+     * Create a new Hotel
+     */
+    createHotel: async (hotelData: any) => {
+        try {
+            const response = await partnerApiClient.post('/hotel', hotelData);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to create hotel", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get all Hotels
+     */
+    getAllHotels: async () => {
+        try {
+            const response = await partnerApiClient.get('/hotel');
+            return response.data;
+        } catch (error) {
+            console.error("Failed to get all hotels", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Update an existing Hotel
+     */
+    updateHotel: async (id: number, hotelData: any) => {
+        try {
+            const response = await partnerApiClient.put(`/hotel/${id}`, hotelData);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to update hotel", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Delete a Hotel
+     */
+    deleteHotel: async (id: number) => {
+        try {
+            await partnerApiClient.delete(`/hotel/${id}`);
+        } catch (error) {
+            console.error("Failed to delete hotel", error);
             throw error;
         }
     }

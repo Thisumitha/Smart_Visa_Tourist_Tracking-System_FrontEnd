@@ -15,11 +15,8 @@ const Login: React.FC = () => {
         setLoading(true);
         try {
             const data = await AuthAPI.login({ email: _email, password: _password });
-            // Save token and role
+            // Save token ONLY (Do not save role in local storage for security)
             localStorage.setItem('accessToken', data.accessToken);
-            if (data.role) {
-                localStorage.setItem('role', data.role);
-            }
             
             await Swal.fire({
                 icon: 'success',
@@ -32,18 +29,26 @@ const Login: React.FC = () => {
                 showConfirmButton: false
             });
             
-            // Navigate to appropriate Dashboard based on Role
-            const userRole = data.role || 'ROLE_ADMIN'; // Fallback
-            if (userRole === 'ROLE_ADMIN') {
-                navigate('/admin');
-            } else if (userRole === 'ROLE_AGENCY') {
+            // Securely decode the JWT to find the role
+            let userRole = 'ROLE_ADMIN'; // Fallback
+            try {
+                const payload = data.accessToken.split('.')[1];
+                const decoded = JSON.parse(atob(payload));
+                if (decoded.role) {
+                    userRole = decoded.role;
+                }
+            } catch (e) {
+                console.error("Failed to decode token", e);
+            }
+            
+            if (userRole.includes('AGENCY')) {
                 navigate('/agency');
-            } else if (userRole === 'ROLE_HOTEL') {
+            } else if (userRole.includes('HOTEL')) {
                 navigate('/hotel');
-            } else if (userRole === 'ROLE_IMMIGRATION') {
+            } else if (userRole.includes('IMMIGRATION')) {
                 navigate('/immigration');
             } else {
-                navigate('/admin'); // Default fallback
+                navigate('/admin/dashboard'); // Default fallback for Admin
             }
         } catch (err: any) {
             Swal.fire({
