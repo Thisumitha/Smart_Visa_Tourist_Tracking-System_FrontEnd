@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Globe, Users, Plus, Trash2, Edit2, X, Save, Building, MapPin } from 'lucide-react';
 import { TouristAPI } from '../api/tourist.api';
-import { PartnerAPI } from '../api/partner.api';
+import { PartnerAPI, HotelCheckInAPI } from '../api/partner.api';
 import Swal from 'sweetalert2';
 
 const TouristManagement: React.FC = () => {
@@ -239,7 +239,7 @@ const TouristManagement: React.FC = () => {
         setLoadingHistory(true);
         setTravelHistory([]);
         try {
-            const history = await PartnerAPI.getTouristTravelHistory(tourist.touristId);
+            const history = await HotelCheckInAPI.getTouristTravelHistory(tourist.touristId);
             // Sort by latest check-in date
             const sortedHistory = (history || []).sort((a: any, b: any) => {
                 return new Date(b.checkInDate).getTime() - new Date(a.checkInDate).getTime();
