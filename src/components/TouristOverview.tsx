@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Globe, CreditCard, FileText, ChevronDown, ChevronUp, User } from 'lucide-react';
+import { Search, Globe, CreditCard, FileText, ChevronDown, ChevronUp, User, Briefcase } from 'lucide-react';
 import { TouristAPI, PassportAPI } from '../api/tourist.api';
 import { VisaAPI } from '../api/visa.api';
+import { PartnerAPI } from '../api/partner.api';
 
 interface Tourist {
     touristId: number;
@@ -33,6 +34,7 @@ const TouristOverview: React.FC = () => {
     const [tourists, setTourists] = useState<Tourist[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [touristAgencyMap, setTouristAgencyMap] = useState<Record<number, any>>({});
 
     // State for expanded tourist rows
     const [expandedTourist, setExpandedTourist] = useState<number | null>(null);
@@ -52,6 +54,31 @@ const TouristOverview: React.FC = () => {
         try {
             const data = await TouristAPI.getAllTourists();
             setTourists(data.content ? data.content : data);
+
+            // Fetch agency mappings
+            try {
+                const agenciesData = await PartnerAPI.getAllAgencies();
+                const agencies = Array.isArray(agenciesData) ? agenciesData : (agenciesData?.content || []);
+                
+                const mapping: Record<number, any> = {};
+                
+                // For each agency, get its assigned tourists
+                await Promise.all(agencies.map(async (agency: any) => {
+                    try {
+                        const touristIdsData = await PartnerAPI.getAssignedTourists(agency.agencyId);
+                        const touristIds = Array.isArray(touristIdsData) ? touristIdsData : (touristIdsData?.content || []);
+                        touristIds.forEach((tId: number) => {
+                            mapping[tId] = agency;
+                        });
+                    } catch (e) {
+                        console.error(`Failed mapping for agency ${agency.agencyId}`, e);
+                    }
+                }));
+                
+                setTouristAgencyMap(mapping);
+            } catch (err) {
+                console.error("Failed to fetch agency mappings", err);
+            }
         } catch (err) {
             console.error("Failed to fetch tourists", err);
         } finally {
@@ -173,6 +200,11 @@ const TouristOverview: React.FC = () => {
                                             <span className="flex items-center gap-1"><Globe size={14}/> {tourist.nationality}</span>
                                             <span className="flex items-center gap-1"><User size={14}/> {tourist.gender}</span>
                                             <span>DOB: {tourist.dateOfBirth}</span>
+                                            {touristAgencyMap[tourist.touristId] && (
+                                                <span className="flex items-center gap-1 text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20" title={`Assigned Agency (Lic: ${touristAgencyMap[tourist.touristId].licenseNumber})`}>
+                                                    <Briefcase size={12}/> {touristAgencyMap[tourist.touristId].agencyName}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -181,9 +213,39 @@ const TouristOverview: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Expanded Content: Passports and Visas */}
+                            {/* Expanded Content: Passports, Visas, and Agency */}
                             {expandedTourist === tourist.touristId && (
                                 <div className="p-6 bg-slate-900/40">
+                                    
+                                    {/* Assigned Agency Details */}
+                                    {touristAgencyMap[tourist.touristId] && (
+                                        <div className="mb-6 bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                                            <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                <Briefcase size={16} className="text-indigo-400"/> Assigned Travel Agency
+                                            </h4>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                <div>
+                                                    <p className="text-xs text-slate-500 mb-1">Agency Name</p>
+                                                    <p className="text-sm font-medium text-white">{touristAgencyMap[tourist.touristId].agencyName}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-slate-500 mb-1">License Number</p>
+                                                    <p className="text-sm font-medium text-white">{touristAgencyMap[tourist.touristId].licenseNumber}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-slate-500 mb-1">System ID</p>
+                                                    <p className="text-sm font-medium text-slate-300">#{touristAgencyMap[tourist.touristId].agencyId}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-slate-500 mb-1">Status</p>
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${touristAgencyMap[tourist.touristId].status ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                                                        {touristAgencyMap[tourist.touristId].status ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
                                         <CreditCard size={16} className="text-amber-400"/> Assigned Passports
                                     </h4>

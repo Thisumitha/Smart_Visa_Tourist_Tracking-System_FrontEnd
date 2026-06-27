@@ -13,6 +13,8 @@ import PassportManagement from '../../components/PassportManagement';
 import TouristOverview from '../../components/TouristOverview';
 import AirportDuty from '../../components/AirportDuty';
 import TravelLogs from '../../components/TravelLogs';
+import VisaDashboard from '../../components/Dashboard/VisaDashboard';
+import AgencyManagement from '../../components/AgencyManagement';
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -108,6 +110,10 @@ const AdminDashboard: React.FC = () => {
     };
 
     const renderContent = () => {
+        if (activeTab === 'dashboard') {
+            return <VisaDashboard />;
+        }
+
         if (activeTab === 'overview') {
             return (
                 <div className="space-y-8">
@@ -231,38 +237,7 @@ const AdminDashboard: React.FC = () => {
         }
 
         if (activeTab === 'agencies') {
-            return (
-                <div className="max-w-2xl mx-auto">
-                    <div className="glass-panel rounded-2xl p-8">
-                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                            <Briefcase className="text-indigo-400" /> Register Travel Agency
-                        </h2>
-                        {registerStatus && <div className="mb-6 p-4 bg-indigo-500/10 text-indigo-400 rounded-xl text-sm font-medium border border-indigo-500/20">{registerStatus}</div>}
-                        
-                        <form onSubmit={handleRegisterAgency} className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Agency Name</label>
-                                <input type="text" required value={agencyForm.name} onChange={e => setAgencyForm({...agencyForm, name: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Lanka Tours Pvt Ltd" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">License Number</label>
-                                <input type="text" required value={agencyForm.license} onChange={e => setAgencyForm({...agencyForm, license: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="SLTBA-12345" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Contact Email (Login ID)</label>
-                                <input type="email" required value={agencyForm.email} onChange={e => setAgencyForm({...agencyForm, email: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="contact@lankatours.com" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Account Password</label>
-                                <input type="password" required value={agencyForm.password} onChange={e => setAgencyForm({...agencyForm, password: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="••••••••" />
-                            </div>
-                            <button type="submit" disabled={isRegistering} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all flex justify-center items-center gap-2">
-                                {isRegistering ? 'Registering...' : <><Plus size={18} /> Register Agency Profile & Account</>}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            );
+            return <AgencyManagement />;
         }
 
         if (activeTab === 'hotels') {
@@ -312,7 +287,7 @@ const AdminDashboard: React.FC = () => {
             <main className="flex-1 flex flex-col h-screen overflow-hidden">
                 <header className="h-20 glass-panel border-x-0 border-t-0 rounded-none flex items-center justify-between px-8 z-10">
                     <h2 className="text-xl font-semibold text-white capitalize">
-                        {activeTab === 'overview' ? 'System Overview' : `Manage ${activeTab}`}
+                        {activeTab === 'overview' ? 'System Overview' : activeTab === 'dashboard' ? 'Visa Tracking Dashboard' : `Manage ${activeTab}`}
                     </h2>
                     <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-slate-800 shadow-lg">
