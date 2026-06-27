@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Globe, CreditCard, FileText, ChevronDown, ChevronUp, User, Briefcase } from 'lucide-react';
-import { TouristAPI, PassportAPI } from '../api/tourist.api';
+import { Search, Globe, CreditCard, FileText, ChevronDown, ChevronUp, User, Briefcase, Phone, PhoneCall, Edit2, Save, Plus, X } from 'lucide-react';
+import { TouristAPI, PassportAPI, EmergencyContactAPI } from '../api/tourist.api';
 import { VisaAPI } from '../api/visa.api';
 import { PartnerAPI } from '../api/partner.api';
+
+interface EmergencyContact {
+    contactId: number;
+    touristId: number;
+    name: string;
+    phoneNumber: string;
+    relationship: string;
+}
 
 interface Tourist {
     touristId: number;
@@ -30,11 +38,16 @@ interface Visa {
     status: string;
 }
 
-const TouristOverview: React.FC = () => {
+interface TouristOverviewProps {
+    agencyMode?: boolean;
+}
+
+const TouristOverview: React.FC<TouristOverviewProps> = ({ agencyMode = false }) => {
     const [tourists, setTourists] = useState<Tourist[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [touristAgencyMap, setTouristAgencyMap] = useState<Record<number, any>>({});
+    const [myAgencyId, setMyAgencyId] = useState<number | null>(null);
 
     // State for expanded tourist rows
     const [expandedTourist, setExpandedTourist] = useState<number | null>(null);
@@ -44,6 +57,13 @@ const TouristOverview: React.FC = () => {
     // State for expanded passports (to load their visas)
     const [visasMap, setVisasMap] = useState<Record<number, Visa[]>>({});
     const [loadingVisas, setLoadingVisas] = useState<Record<number, boolean>>({});
+
+    // Emergency Contacts State
+    const [contactsMap, setContactsMap] = useState<Record<number, EmergencyContact[]>>({});
+    const [loadingContacts, setLoadingContacts] = useState<Record<number, boolean>>({});
+    const [editingContact, setEditingContact] = useState<number | null>(null);
+    const [contactForm, setContactForm] = useState({ name: '', phoneNumber: '', relationship: '' });
+    const [showContactFormFor, setShowContactFormFor] = useState<number | null>(null);
 
     useEffect(() => {
         fetchTourists();
@@ -59,6 +79,10 @@ const TouristOverview: React.FC = () => {
             try {
                 const agenciesData = await PartnerAPI.getAllAgencies();
                 const agencies = Array.isArray(agenciesData) ? agenciesData : (agenciesData?.content || []);
+                
+                if (agencies.length > 0) {
+                    setMyAgencyId(agencies[0].agencyId);
+                }
                 
                 const mapping: Record<number, any> = {};
                 
@@ -96,10 +120,25 @@ const TouristOverview: React.FC = () => {
     const toggleTourist = async (touristId: number) => {
         if (expandedTourist === touristId) {
             setExpandedTourist(null);
+            setShowContactFormFor(null);
+            setEditingContact(null);
             return;
         }
         
         setExpandedTourist(touristId);
+
+        // Fetch emergency contacts if not already cached
+        if (!contactsMap[touristId]) {
+            setLoadingContacts(prev => ({ ...prev, [touristId]: true }));
+            try {
+                const data = await EmergencyContactAPI.getContactsByTouristId(touristId);
+                setContactsMap(prev => ({ ...prev, [touristId]: data.content ? data.content : data }));
+            } catch (err) {
+                console.error(`Failed to fetch emergency contacts for tourist ${touristId}`, err);
+            } finally {
+                setLoadingContacts(prev => ({ ...prev, [touristId]: false }));
+            }
+        }
 
         // Fetch passports if not already cached
         if (!passportsMap[touristId]) {
@@ -121,6 +160,34 @@ const TouristOverview: React.FC = () => {
         }
     };
 
+    const handleSaveNewContact = async (touristId: number) => {
+        try {
+            const newContact = await EmergencyContactAPI.createContact(touristId, contactForm);
+            setContactsMap(prev => ({
+                ...prev,
+                [touristId]: [...(prev[touristId] || []), newContact]
+            }));
+            setShowContactFormFor(null);
+            setContactForm({ name: '', phoneNumber: '', relationship: '' });
+        } catch (e) {
+            console.error("Failed to save contact", e);
+        }
+    };
+
+    const handleUpdateContact = async (touristId: number, contactId: number) => {
+        try {
+            const updated = await EmergencyContactAPI.updateContact(contactId, touristId, contactForm);
+            setContactsMap(prev => ({
+                ...prev,
+                [touristId]: prev[touristId].map(c => c.contactId === contactId ? updated : c)
+            }));
+            setEditingContact(null);
+            setContactForm({ name: '', phoneNumber: '', relationship: '' });
+        } catch (e) {
+            console.error("Failed to update contact", e);
+        }
+    };
+
     const fetchVisasForPassport = async (passportId: number) => {
         if (visasMap[passportId]) return; // Already cached
         
@@ -136,6 +203,13 @@ const TouristOverview: React.FC = () => {
     };
 
     const filteredTourists = tourists.filter(t => {
+        if (agencyMode && myAgencyId !== null) {
+            const assignedAgency = touristAgencyMap[t.touristId];
+            if (!assignedAgency || assignedAgency.agencyId !== myAgencyId) {
+                return false; // Filter out tourists not assigned to this agency
+            }
+        }
+
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
         return (
@@ -245,6 +319,91 @@ const TouristOverview: React.FC = () => {
                                             </div>
                                         </div>
                                     )}
+
+                                    {/* Emergency Contacts Section */}
+                                    <div className="mb-6 bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                                                <PhoneCall size={16} className="text-pink-400"/> Emergency Contacts
+                                            </h4>
+                                            {agencyMode && !showContactFormFor && (
+                                                <button 
+                                                    onClick={() => {
+                                                        setShowContactFormFor(tourist.touristId);
+                                                        setContactForm({ name: '', phoneNumber: '', relationship: '' });
+                                                        setEditingContact(null);
+                                                    }}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded-lg text-xs font-medium transition-colors border border-pink-500/20"
+                                                >
+                                                    <Plus size={14} /> Add Contact
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {loadingContacts[tourist.touristId] ? (
+                                            <div className="text-slate-500 text-sm animate-pulse ml-6">Loading contacts...</div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {contactsMap[tourist.touristId]?.map(contact => (
+                                                    <div key={contact.contactId} className="bg-slate-900/60 rounded-xl p-4 border border-slate-700/30">
+                                                        {editingContact === contact.contactId ? (
+                                                            <div className="space-y-3">
+                                                                <input type="text" placeholder="Name" value={contactForm.name} onChange={e => setContactForm({...contactForm, name: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-pink-500" />
+                                                                <input type="text" placeholder="Phone Number" value={contactForm.phoneNumber} onChange={e => setContactForm({...contactForm, phoneNumber: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-pink-500" />
+                                                                <input type="text" placeholder="Relationship" value={contactForm.relationship} onChange={e => setContactForm({...contactForm, relationship: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-pink-500" />
+                                                                <div className="flex gap-2">
+                                                                    <button onClick={() => handleUpdateContact(tourist.touristId, contact.contactId)} className="flex-1 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg text-xs font-medium transition-colors">Save</button>
+                                                                    <button onClick={() => setEditingContact(null)} className="py-2 px-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors"><X size={14}/></button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex justify-between items-start">
+                                                                <div>
+                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                        <span className="text-white font-medium">{contact.name}</span>
+                                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">{contact.relationship}</span>
+                                                                    </div>
+                                                                    <p className="text-sm text-slate-400 flex items-center gap-1.5"><Phone size={12}/> {contact.phoneNumber}</p>
+                                                                </div>
+                                                                {agencyMode && (
+                                                                    <button 
+                                                                        onClick={() => {
+                                                                            setEditingContact(contact.contactId);
+                                                                            setContactForm({ name: contact.name, phoneNumber: contact.phoneNumber, relationship: contact.relationship });
+                                                                        }}
+                                                                        className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                                                    >
+                                                                        <Edit2 size={14} />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                {contactsMap[tourist.touristId]?.length === 0 && !showContactFormFor && (
+                                                    <div className="text-slate-500 text-sm italic col-span-2 ml-2">No emergency contacts found.</div>
+                                                )}
+                                                
+                                                {/* Add New Contact Form */}
+                                                {showContactFormFor === tourist.touristId && (
+                                                    <div className="bg-pink-500/5 rounded-xl p-4 border border-pink-500/20 col-span-1 md:col-span-2 lg:col-span-1">
+                                                        <h5 className="text-xs font-medium text-pink-400 mb-3">Add New Contact</h5>
+                                                        <div className="space-y-3">
+                                                            <input type="text" placeholder="Name" value={contactForm.name} onChange={e => setContactForm({...contactForm, name: e.target.value})} className="w-full px-3 py-2 bg-slate-800/80 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-pink-500" />
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <input type="text" placeholder="Phone Number" value={contactForm.phoneNumber} onChange={e => setContactForm({...contactForm, phoneNumber: e.target.value})} className="w-full px-3 py-2 bg-slate-800/80 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-pink-500" />
+                                                                <input type="text" placeholder="Relationship" value={contactForm.relationship} onChange={e => setContactForm({...contactForm, relationship: e.target.value})} className="w-full px-3 py-2 bg-slate-800/80 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-pink-500" />
+                                                            </div>
+                                                            <div className="flex gap-2 pt-1">
+                                                                <button onClick={() => handleSaveNewContact(tourist.touristId)} className="flex-1 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg text-xs font-medium transition-colors flex justify-center items-center gap-1.5"><Save size={14}/> Save Contact</button>
+                                                                <button onClick={() => setShowContactFormFor(null)} className="py-2 px-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors">Cancel</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
 
                                     <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
                                         <CreditCard size={16} className="text-amber-400"/> Assigned Passports

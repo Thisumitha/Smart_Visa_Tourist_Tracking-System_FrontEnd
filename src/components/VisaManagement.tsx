@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { FileText, Plus, Trash2, Edit2, X, Save, Search } from 'lucide-react';
-import { VisaAPI } from '../api/visa.api';
+import { FileText, Plus, Trash2, Edit2, X, Save, Search, Calendar } from 'lucide-react';
+import { VisaAPI, VisaExtensionAPI } from '../api/visa.api';
 import { PassportAPI } from '../api/tourist.api';
 import Swal from 'sweetalert2';
 
@@ -22,6 +22,10 @@ const VisaManagement: React.FC = () => {
     
     // UI states
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Extension States
+    const [extendingVisaId, setExtendingVisaId] = useState<number | null>(null);
+    const [extensionForm, setExtensionForm] = useState({ extendedDate: '', reason: '' });
 
     useEffect(() => {
         fetchVisas();
@@ -130,6 +134,27 @@ const VisaManagement: React.FC = () => {
         return String(dateVal).split('T')[0];
     };
 
+    const getDisplayStatus = (visa: any) => {
+        if (visa.status === 'Revoked') return 'Revoked';
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let isExpired = false;
+        if (visa.expiryDate) {
+            let expiryDate;
+            if (Array.isArray(visa.expiryDate)) {
+                expiryDate = new Date(visa.expiryDate[0], visa.expiryDate[1] - 1, visa.expiryDate[2]);
+            } else {
+                expiryDate = new Date(visa.expiryDate);
+            }
+            if (expiryDate < today) {
+                isExpired = true;
+            }
+        }
+        return isExpired ? 'Expired' : visa.status;
+    };
+
     const handleEditClick = (visa: any) => {
         setEditingId(visa.visaId);
         setVisaForm({
@@ -146,6 +171,44 @@ const VisaManagement: React.FC = () => {
     const handleCancelEdit = () => {
         setEditingId(null);
         setVisaForm({ visaId: '', passportId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
+    };
+
+    const handleExtendSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!extendingVisaId) return;
+        setIsSubmitting(true);
+        try {
+            // 1. Create extension log
+            await VisaExtensionAPI.createVisaExtension({
+                visaId: extendingVisaId,
+                extendedDate: extensionForm.extendedDate,
+                reason: extensionForm.reason
+            });
+            // 2. Update Visa
+            await VisaAPI.partialUpdateVisa(extendingVisaId, { expiryDate: extensionForm.extendedDate, status: 'Active' });
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Visa Extended!',
+                text: `Visa #${extendingVisaId} has been successfully extended.`,
+                background: '#0f172a',
+                color: '#fff',
+                confirmButtonColor: '#10b981'
+            });
+            setExtendingVisaId(null);
+            fetchVisas();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to extend visa.',
+                background: '#0f172a',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleDeleteVisa = async (id: number) => {
@@ -310,11 +373,17 @@ const VisaManagement: React.FC = () => {
                                         <td className="p-4 text-slate-400">{formatDateForInput(v.issueDate)}</td>
                                         <td className="p-4 text-slate-400">{formatDateForInput(v.expiryDate)}</td>
                                         <td className="p-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${v.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400' : v.status === 'Expired' ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
-                                                {v.status}
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDisplayStatus(v) === 'Active' ? 'bg-emerald-500/20 text-emerald-400' : getDisplayStatus(v) === 'Expired' ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
+                                                {getDisplayStatus(v)}
                                             </span>
                                         </td>
                                         <td className="p-4 text-right flex justify-end gap-2">
+                                            <button onClick={() => {
+                                                setExtendingVisaId(v.visaId);
+                                                setExtensionForm({ extendedDate: '', reason: '' });
+                                            }} className="text-amber-400 hover:text-amber-300 p-2 rounded-lg hover:bg-amber-500/10 transition-colors" title="Extend Visa">
+                                                <Calendar size={16} />
+                                            </button>
                                             <button onClick={() => handleEditClick(v)} className="text-indigo-400 hover:text-indigo-300 p-2 rounded-lg hover:bg-indigo-500/10 transition-colors" title="Edit Visa">
                                                 <Edit2 size={16} />
                                             </button>
@@ -329,6 +398,35 @@ const VisaManagement: React.FC = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Extension Modal */}
+            {extendingVisaId && (
+                <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                <Calendar className="text-amber-400" /> Extend Visa #{extendingVisaId}
+                            </h3>
+                            <button onClick={() => setExtendingVisaId(null)} className="text-slate-400 hover:text-white">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleExtendSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">New Expiry Date</label>
+                                <input type="date" required value={extensionForm.extendedDate} onChange={e => setExtensionForm({...extensionForm, extendedDate: e.target.value})} className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-amber-500 outline-none" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Reason for Extension</label>
+                                <textarea required value={extensionForm.reason} onChange={e => setExtensionForm({...extensionForm, reason: e.target.value})} className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-amber-500 outline-none min-h-[100px]" placeholder="E.g. Medical emergency, Flight delayed..."></textarea>
+                            </div>
+                            <button type="submit" disabled={isSubmitting} className="w-full py-3 mt-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-medium transition-all flex justify-center items-center gap-2">
+                                {isSubmitting ? 'Processing...' : 'Confirm Extension'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

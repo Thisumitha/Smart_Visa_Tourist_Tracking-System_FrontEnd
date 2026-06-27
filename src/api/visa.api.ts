@@ -78,15 +78,81 @@ export const VisaAPI = {
         }
     },
 
-    /**
-     * Search visas by Type
-     */
     searchByVisaType: async (visaType: string, page = 0, size = 10) => {
         try {
             const response = await trackingApiClient.get(`/visas/search/type?visaType=${visaType}&page=${page}&size=${size}`);
             return response.data;
         } catch (error) {
             console.error("Failed to search visas by type", error);
+            throw error;
+        }
+    }
+};
+
+export const VisaExtensionAPI = {
+    getAllVisaExtensions: async (page = 0, size = 10, sortBy = 'extensionId') => {
+        try {
+            const response = await trackingApiClient.get(`/visaextensions/all?page=${page}&size=${size}&sortBy=${sortBy}`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch visa extensions", error);
+            throw error;
+        }
+    },
+    createVisaExtension: async (data: { visaId: number, extendedDate: string, reason: string }) => {
+        try {
+            const response = await trackingApiClient.post('/visaextensions', data);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to create visa extension", error);
+            throw error;
+        }
+    }
+};
+
+export const TravelLogAPI = {
+    getAllTravelLogs: async (page = 0, size = 1000, sortBy = 'logId') => {
+        try {
+            const response = await trackingApiClient.get(`/travellogs/all?page=${page}&size=${size}&sortBy=${sortBy}`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch travel logs", error);
+            throw error;
+        }
+    },
+    getLogsByTouristId: async (touristId: number, page = 0, size = 1000) => {
+        try {
+            const response = await trackingApiClient.get(`/travellogs/search/tourist?touristId=${touristId}&page=${page}&size=${size}`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch travel logs for tourist", error);
+            throw error;
+        }
+    },
+    createTravelLog: async (data: { touristId: number, location: string, checkInDate: string, checkOutDate: string }) => {
+        try {
+            const response = await trackingApiClient.post('/travellogs', data);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to create travel log", error);
+            throw error;
+        }
+    },
+    updateTravelLog: async (id: number, data: { location: string, checkInDate: string, checkOutDate: string }) => {
+        try {
+            // Using partial update for flexibility
+            const response = await trackingApiClient.patch(`/travellogs/partialupdate/${id}`, data);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to update travel log", error);
+            throw error;
+        }
+    },
+    deleteTravelLog: async (id: number) => {
+        try {
+            await trackingApiClient.delete(`/travellogs/delete/${id}`);
+        } catch (error) {
+            console.error("Failed to delete travel log", error);
             throw error;
         }
     }

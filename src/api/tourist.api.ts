@@ -204,3 +204,33 @@ export const ExitAPI = {
         }
     }
 };
+
+export const EmergencyContactAPI = {
+    getContactsByTouristId: async (touristId: number) => {
+        try {
+            const response = await touristApiClient.get(`/emergency-contacts/tourist/${touristId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to get emergency contacts", error);
+            throw error;
+        }
+    },
+    createContact: async (touristId: number, data: { name: string, phoneNumber: string, relationship: string }) => {
+        try {
+            const response = await touristApiClient.post(`/emergency-contacts/tourist/${touristId}`, data);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to create emergency contact", error);
+            throw error;
+        }
+    },
+    updateContact: async (id: number, touristId: number, data: { name: string, phoneNumber: string, relationship: string }) => {
+        try {
+            const response = await touristApiClient.put(`/emergency-contacts/${id}/tourist/${touristId}`, data);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to update emergency contact", error);
+            throw error;
+        }
+    }
+};
