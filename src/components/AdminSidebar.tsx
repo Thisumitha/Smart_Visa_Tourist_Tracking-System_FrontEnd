@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Activity, Globe, UserPlus, Briefcase, Building2, LogOut, FileText, Bell, Book, History, LayoutDashboard } from 'lucide-react';
+import { ShieldCheck, Globe, UserPlus, Briefcase, Building2, LogOut, FileText, Bell, Book, History, LayoutDashboard } from 'lucide-react';
 
 interface AdminSidebarProps {
     activeTab: string;

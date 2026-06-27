@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Building2, Plus, Save, UserPlus } from 'lucide-react';
+import { Save, UserPlus } from 'lucide-react';
 import { AuthAPI } from '../../api/auth.api';
-import { HotelAPI } from '../../api/partner.api';
+
 import AdminSidebar from '../../components/AdminSidebar';
 import TouristManagement from '../../components/TouristManagement';
 import VisaManagement from '../../components/VisaManagement';

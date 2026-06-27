@@ -29,12 +29,10 @@ const AgencyTravelLog: React.FC = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('accessToken');
-            let agencyId = 1;
+            // We are mocking getting the agencyId from token or profile
             try {
                 if (token) {
-                    const payload = token.split('.')[1];
-                    const decoded = JSON.parse(atob(payload));
-                    if (decoded.userId) agencyId = decoded.userId;
+                    // token parsing logic if needed later
                 }
             } catch (e) {
                 console.error("Failed to decode token", e);

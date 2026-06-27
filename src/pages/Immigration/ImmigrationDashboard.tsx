@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TouristAPI } from '../../api/tourist.api';
-import { ShieldCheck, UserPlus, FileText, Globe, Calendar, LogOut } from 'lucide-react';
+import { ShieldCheck, UserPlus, FileText, Globe, Calendar } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ImmigrationSidebar from '../../components/ImmigrationSidebar';
 import RegistrationWizard from '../../components/RegistrationWizard';
