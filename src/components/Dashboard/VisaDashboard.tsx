@@ -45,7 +45,6 @@ const GREEN  = '#1D9E75';
 const PURPLE = '#7F77DD';
 const AMBER  = '#BA7517';
 const RED    = '#E24B4A';
-const TEAL   = '#0F6E56';
 
 // ─── Shared Chart defaults ────────────────────────────────────────────────────
 const GRID_COLOR  = 'rgba(255,255,255,0.06)';
