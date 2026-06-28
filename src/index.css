@@ -1,15 +1,513 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* ── Light Mode Design Tokens ── */
+  /* AI-generated network connectivity backdrop */
+  --bg-gradient: #f1f5f9;
+  --bg-image: linear-gradient(rgba(241, 245, 249, 0.45), rgba(226, 232, 240, 0.50)), url('/visa_system_bg_light.png');
+  --bg-blur: 2px;
+  --bg-saturate: 105%;
+  --card-bg: rgba(255, 255, 255, 0.65);
+  --card-border: rgba(15, 23, 42, 0.08);
+  --text-heading: #0f172a;
+  --text-main: #1e293b;
+  --text-muted: #475569;
+  --text-description: #64748b;
+
+  /* Pill Nav - Liquid Glass variant */
+  --nav-bg: rgba(255, 255, 255, 0.28);
+  --nav-border: rgba(255, 255, 255, 0.28);
+  --nav-item-color: #1e293b;
+  --nav-item-hover: rgba(255, 255, 255, 0.40);
+  --nav-item-active-bg: rgba(255, 255, 255, 0.55);
+  --nav-item-active-text: #1d4ed8;
+  --nav-shadow: 0 10px 35px rgba(30, 64, 175, 0.04), inset 0 1px 2px rgba(255, 255, 255, 0.45);
+
+  /* Form Elements */
+  --input-bg: rgba(255, 255, 255, 0.78);
+  --input-border: rgba(30, 58, 138, 0.12);
+  --input-text: #1e293b;
+
+  /* Buttons */
+  --button-bg: #1e3a8a;
+  --button-hover: #1e40af;
+  --button-text: #f0f7ff;
+
+  /* High Contrast Stat Colors */
+  --stat-blue: #1e40af;
+  --stat-emerald: #047857;
+  --stat-purple: #6d28d9;
+  --stat-red: #c2410c;
+  --stat-amber: #b45309;
+  --stat-teal: #0f766e;
+  --stat-pink: #b9187a;
+  --stat-cyan: #0369a1;
+
+  /* Global Overrides */
+  --override-card-bg: rgba(255, 255, 255, 0.65);
+  --override-inner-bg: rgba(255, 255, 255, 0.70);
+  --override-border: rgba(30, 58, 138, 0.10);
+}
+
+.dark {
+  /* ── Dark Mode Design Tokens ── */
+  /* Neutral, ultra-clean charcoal to black gradient */
+  --bg-gradient: #0a0a0b;
+  --bg-image: linear-gradient(rgba(10, 10, 12, 0.45), rgba(5, 5, 6, 0.50)), url('/visa_system_bg.png');
+  --bg-blur: 12px;
+  --bg-saturate: 125%;
+  --card-bg: rgba(15, 23, 42, 0.62);
+  /* Balanced translucency for a clean glass look */
+  --card-border: rgba(255, 255, 255, 0.09);
+  /* Subtle but crisp border definition */
+  --text-heading: #ffffff;
+  /* Bright white for primary text/headings */
+  --text-main: #e2e8f0;
+  /* Crisp slate-200 for excellent text readability */
+  --text-muted: #94a3b8;
+  /* Muted slate-400 for structural labels */
+  --text-description: #64748b;
+
+  /* Pill Nav - Liquid Glass variant */
+  --nav-bg: rgba(10, 15, 30, 0.28);
+  --nav-border: rgba(255, 255, 255, 0.08);
+  --nav-item-color: #cbd5e1;
+  --nav-item-hover: rgba(255, 255, 255, 0.08);
+  --nav-item-active-bg: rgba(255, 255, 255, 0.15);
+  --nav-item-active-text: #38bdf8;
+  --nav-shadow: 0 10px 35px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.20);
+
+  /* Form Elements */
+  --input-bg: rgba(30, 41, 59, 0.75);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-text: #ffffff;
+
+  /* Buttons */
+  --button-bg: #3b82f6;
+  --button-hover: #60a5fa;
+  --button-text: #ffffff;
+
+  /* Refined, professional stat accents (high contrast but softer, not glowing neon) */
+  --stat-blue: #60a5fa;
+  --stat-emerald: #34d399;
+  --stat-purple: #a78bfa;
+  --stat-red: #f87171;
+  --stat-amber: #f59e0b;
+  --stat-teal: #2dd4bf;
+  --stat-pink: #f472b6;
+  --stat-cyan: #22d3ee;
+
+  /* Global Overrides */
+  --override-card-bg: rgba(15, 23, 42, 0.62);
+  --override-inner-bg: rgba(30, 41, 59, 0.50);
+  --override-border: rgba(255, 255, 255, 0.09);
+}
+
 @layer base {
   body {
-    @apply bg-slate-900 text-slate-100 antialiased min-h-screen font-sans;
+    @apply antialiased min-h-screen font-sans;
+    background: var(--bg-gradient);
+    color: var(--text-main);
+    transition: background 0.25s ease, color 0.2s ease;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(var(--bg-blur)) saturate(var(--bg-saturate));
+    -webkit-filter: blur(var(--bg-blur)) saturate(var(--bg-saturate));
+    z-index: -1;
+    transform: scale(1.08);
+    /* Avoids white edge gaps from blur */
+    pointer-events: none;
+    transition: background 0.25s ease, filter 0.25s ease;
+  }
+
+  /* Smooth light/dark scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 99px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
   }
 }
 
-@layer utilities {
+@layer components {
+
+  /* ── Frosted Glass Card ── */
   .glass-panel {
-    @apply bg-glass backdrop-blur-md border border-glassborder shadow-xl;
+    background: var(--card-bg);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.02);
+    transition: background 0.25s ease, border-color 0.25s ease;
+  }
+
+  /* ── Floating Pill Navigation ── */
+  .pill-nav-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+  }
+
+  .pill-nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 6px;
+    background: var(--nav-bg);
+    backdrop-filter: blur(28px) saturate(210%);
+    -webkit-backdrop-filter: blur(28px) saturate(210%);
+    border: 1px solid var(--nav-border);
+    border-radius: 9999px;
+    box-shadow: var(--nav-shadow);
+    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .pill-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 13px;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--nav-item-color);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: background 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  .pill-nav-item:hover {
+    background: var(--nav-item-hover);
+    color: var(--nav-item-active-text);
+  }
+
+  .pill-nav-item.active {
+    background: var(--nav-item-active-bg);
+    color: var(--nav-item-active-text);
+    font-weight: 600;
+  }
+
+  .pill-nav-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--nav-border);
+    margin: 0 2px;
+    flex-shrink: 0;
+  }
+
+  .pill-nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 12px;
+    border-right: 1px solid var(--nav-border);
+    margin-right: 4px;
+  }
+
+  .pill-nav-logout {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 13px;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-description);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: background 0.15s ease, color 0.15s ease;
+    margin-left: 2px;
+    white-space: nowrap;
+  }
+
+  .pill-nav-logout:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+  }
+
+  /* ── Dashboard Canvas ── */
+  .dashboard-canvas {
+    padding-top: 108px;
+    padding-left: 40px;
+    padding-right: 40px;
+    max-width: 1350px;
+    /* Matched with the flat navbar size */
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Automatically center short forms and views vertically on the screen */
+  .dashboard-canvas>div {
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 100%;
+  }
+
+  /* Expand narrow cards to align proportionately with the wide navbar layout */
+  .dashboard-canvas>div.max-w-2xl {
+    max-width: 1000px !important;
+  }
+
+  .dashboard-canvas>div.max-w-3xl {
+    max-width: 1150px !important;
+  }
+
+  .dashboard-canvas>div.max-w-4xl {
+    max-width: 1250px !important;
+  }
+
+  /* ── Status Badges ── */
+  .badge-approved {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--stat-emerald);
+    border: 1px solid rgba(16, 185, 129, 0.22);
+  }
+
+  .badge-pending {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--stat-amber);
+    border: 1px solid rgba(245, 158, 11, 0.22);
+  }
+
+  .badge-rejected {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+    background: rgba(239, 68, 68, 0.10);
+    color: var(--stat-red);
+    border: 1px solid rgba(239, 68, 68, 0.20);
+  }
+
+  /* ── Minimal Classic Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-all;
+    background: var(--button-bg);
+    color: var(--button-text) !important;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary:hover {
+    background: var(--button-hover);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-all;
+    background: var(--card-bg);
+    color: var(--text-main);
+    border: 1px solid var(--card-border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--override-inner-bg);
+    border-color: var(--card-border);
+  }
+
+  /* ── Form Inputs ── */
+  .input-light {
+    @apply block w-full px-4 py-2.5 rounded-lg outline-none transition-all text-sm;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
+  }
+
+  .input-light:focus {
+    background: var(--card-bg);
+    border-color: var(--button-bg);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  }
+
+  /* ─────────────────────────────────────────
+     GLOBAL OVERRIDES — Light & Dark theme support
+  ───────────────────────────────────────── */
+
+  /* Override dark card/panel backgrounds to use our unified glass token */
+  .bg-slate-900\/60,
+  .bg-slate-900\/50,
+  .bg-slate-800\/40,
+  .bg-slate-800\/30 {
+    background-color: var(--override-card-bg) !important;
+  }
+
+  /* Unified stat card backgrounds (removing heavy neon colors for a professional look) */
+  .bg-blue-500\/10,
+  .bg-emerald-500\/10,
+  .bg-purple-500\/10,
+  .bg-red-500\/10,
+  .bg-amber-500\/10,
+  .bg-teal-500\/10 {
+    background-color: var(--override-card-bg) !important;
+  }
+
+  /* Override inputs scattered across raw component pages */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--input-text) !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-description) !important;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.5;
+    cursor: pointer;
+    filter: invert(var(--dark-invert, 0));
+  }
+
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+
+  select option {
+    background: var(--card-bg);
+    color: var(--text-main);
+  }
+
+  .bg-slate-900\/60 {
+    background: var(--override-inner-bg) !important;
+  }
+
+  /* Standard dark mode overrides for hardcoded light-theme text color classes */
+  .dark .text-slate-800 {
+    color: var(--text-main) !important;
+  }
+
+  .dark .text-slate-900 {
+    color: var(--text-heading) !important;
+  }
+
+  .dark .text-slate-700 {
+    color: var(--text-muted) !important;
+  }
+
+  /* In light mode, override hardcoded text-white on content elements to be readable */
+  html:not(.dark) h1,
+  html:not(.dark) h2,
+  html:not(.dark) h3,
+  html:not(.dark) h4,
+  html:not(.dark) th {
+    color: var(--text-heading) !important;
+  }
+
+  html:not(.dark) .text-white:not(button):not(.btn-primary):not(.btn-secondary):not(.badge-approved):not(.badge-pending):not(.badge-rejected) {
+    color: var(--text-main) !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--text-heading);
+  }
+
+  p {
+    color: var(--text-muted) !important;
+  }
+
+  tbody tr:hover {
+    background: var(--override-inner-bg) !important;
+  }
+
+  [class*="bg-slate-8"],
+  [class*="bg-slate-9"] {
+    background-color: var(--override-inner-bg) !important;
+  }
+
+  [class*="border-glassborder"] {
+    border-color: var(--override-border) !important;
+  }
+
+  [class*="border-slate-7"] {
+    border-color: var(--override-border) !important;
+  }
+
+  /* Text color mapping override for high-contrast */
+  .text-blue-400 {
+    color: var(--stat-blue) !important;
+  }
+
+  .text-emerald-400 {
+    color: var(--stat-emerald) !important;
+  }
+
+  .text-purple-400 {
+    color: var(--stat-purple) !important;
+  }
+
+  .text-red-400 {
+    color: var(--stat-red) !important;
+  }
+
+  .text-amber-400 {
+    color: var(--stat-amber) !important;
+  }
+
+  .text-teal-400 {
+    color: var(--stat-teal) !important;
+  }
+
+  .text-pink-400 {
+    color: var(--stat-pink) !important;
+  }
+
+  .text-cyan-400 {
+    color: var(--stat-cyan) !important;
+  }
+
+  .text-slate-400 {
+    color: var(--text-muted) !important;
+  }
+
+  .text-slate-500 {
+    color: var(--text-muted) !important;
+  }
+
+  .text-slate-300 {
+    color: var(--text-main) !important;
   }
 }

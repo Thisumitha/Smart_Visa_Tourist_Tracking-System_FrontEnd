@@ -17,18 +17,18 @@ const Login: React.FC = () => {
             const data = await AuthAPI.login({ email: _email, password: _password });
             // Save token ONLY (Do not save role in local storage for security)
             localStorage.setItem('accessToken', data.accessToken);
-            
+
             await Swal.fire({
                 icon: 'success',
                 title: 'Login Successful',
                 text: 'Welcome back!',
-                background: '#0f172a',
-                color: '#fff',
-                confirmButtonColor: '#10b981',
+                background: '#ffffff',
+                color: '#1e293b',
+                confirmButtonColor: '#1e293b',
                 timer: 1500,
                 showConfirmButton: false
             });
-            
+
             // Securely decode the JWT to find the role
             let userRole = 'ROLE_ADMIN'; // Fallback
             try {
@@ -40,7 +40,7 @@ const Login: React.FC = () => {
             } catch (e) {
                 console.error("Failed to decode token", e);
             }
-            
+
             if (userRole.includes('AGENCY')) {
                 navigate('/agency');
             } else if (userRole.includes('HOTEL')) {
@@ -55,9 +55,9 @@ const Login: React.FC = () => {
                 icon: 'error',
                 title: 'Access Denied',
                 text: err.response?.data?.message || 'Invalid credentials. Please try again.',
-                background: '#0f172a',
-                color: '#fff',
-                confirmButtonColor: '#ef4444'
+                background: '#ffffff',
+                color: '#1e293b',
+                confirmButtonColor: '#dc2626'
             });
         } finally {
             setLoading(false);
@@ -65,63 +65,81 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 bg-[url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')] bg-cover bg-center">
-            {/* Dark overlay */}
-            <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"></div>
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden"
+             style={{
+                 background: 'linear-gradient(135deg, #e2e8f0 0%, #dde7f7 40%, #e8edf8 100%)'
+             }}>
+            {/* Subtle background decorations */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full"
+                     style={{ background: 'radial-gradient(circle, rgba(148,163,184,0.18) 0%, transparent 70%)' }} />
+                <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full"
+                     style={{ background: 'radial-gradient(circle, rgba(148,163,184,0.14) 0%, transparent 70%)' }} />
+            </div>
 
-            <div className="relative z-10 w-full max-w-md p-8 glass-panel rounded-2xl">
-                <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/20 text-blue-400 mb-4 border border-blue-500/30">
-                        <ShieldAlert size={32} />
+            {/* Card */}
+            <div className="relative z-10 w-full max-w-sm mx-4">
+                <div className="glass-panel rounded-2xl p-8">
+                    {/* Logo / Brand */}
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
+                             style={{ background: 'rgba(30, 41, 59, 0.07)', border: '1px solid rgba(30,41,59,0.10)' }}>
+                            <ShieldAlert size={26} className="text-slate-600" />
+                        </div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">System Access</h1>
+                        <p className="text-slate-500 mt-1.5 text-sm">Smart Visa &amp; Tourist Tracking</p>
                     </div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">System Access</h1>
-                    <p className="text-slate-400 mt-2">Smart Visa & Tourist Tracking</p>
+
+                    <form onSubmit={handleLogin} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-600 mb-1.5">Email Address</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                    <Mail size={16} />
+                                </div>
+                                <input
+                                    type="email"
+                                    required
+                                    value={_email}
+                                    onChange={(e) => _setEmail(e.target.value)}
+                                    className="input-light pl-10"
+                                    placeholder="admin@smartvisa.com"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-600 mb-1.5">Password</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                    <Lock size={16} />
+                                </div>
+                                <input
+                                    type="password"
+                                    required
+                                    value={_password}
+                                    onChange={(e) => _setPassword(e.target.value)}
+                                    className="input-light pl-10"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="btn-primary w-full py-2.5 mt-2"
+                        >
+                            {loading ? 'Authenticating...' : (
+                                <>Secure Login <ArrowRight size={15} /></>
+                            )}
+                        </button>
+                    </form>
                 </div>
 
-                <form onSubmit={handleLogin} className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                <Mail size={18} />
-                            </div>
-                            <input
-                                type="email"
-                                required
-                                value={_email}
-                                onChange={(e) => _setEmail(e.target.value)}
-                                className="block w-full pl-11 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                placeholder="admin@smartvisa.com"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                <Lock size={18} />
-                            </div>
-                            <input
-                                type="password"
-                                required
-                                value={_password}
-                                onChange={(e) => _setPassword(e.target.value)}
-                                className="block w-full pl-11 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                placeholder="••••••••"
-                            />
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-                    >
-                        {loading ? 'Authenticating...' : 'Secure Login'}
-                        {!loading && <ArrowRight size={18} />}
-                    </button>
-                </form>
+                <p className="text-center text-slate-400 text-xs mt-5">
+                    Smart Visa &amp; Tourist Tracking System
+                </p>
             </div>
         </div>
     );
