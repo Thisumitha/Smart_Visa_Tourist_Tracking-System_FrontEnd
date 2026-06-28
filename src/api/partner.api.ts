@@ -2,13 +2,18 @@ import { partnerApiClient } from '../config/api.config';
 import { TouristAPI, PassportAPI } from './tourist.api';
 import { VisaAPI } from './visa.api';
 
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('accessToken');
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
+
 export const PartnerAPI = {
     /**
      * Create a new Travel Agency
      */
     createAgency: async (agencyData: any) => {
         try {
-            const response = await partnerApiClient.post('/agency', agencyData);
+            const response = await partnerApiClient.post('/agency', agencyData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to create agency", error);
@@ -21,7 +26,7 @@ export const PartnerAPI = {
      */
     getAllAgencies: async () => {
         try {
-            const response = await partnerApiClient.get('/agency');
+            const response = await partnerApiClient.get('/agency', getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to get all agencies", error);
@@ -34,7 +39,7 @@ export const PartnerAPI = {
      */
     assignTouristToAgency: async (agencyId: number, touristId: number) => {
         try {
-            const response = await partnerApiClient.post(`/agency/${agencyId}/assign-tourist/${touristId}`);
+            const response = await partnerApiClient.post(`/agency/${agencyId}/assign-tourist/${touristId}`, {}, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to assign tourist to agency", error);
@@ -47,7 +52,7 @@ export const PartnerAPI = {
      */
     reassignTouristToAgency: async (agencyId: number, touristId: number) => {
         try {
-            const response = await partnerApiClient.put(`/agency/${agencyId}/reassign-tourist/${touristId}`);
+            const response = await partnerApiClient.put(`/agency/${agencyId}/reassign-tourist/${touristId}`, {}, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to reassign tourist to agency", error);
@@ -60,7 +65,7 @@ export const PartnerAPI = {
      */
     updateAgency: async (id: number, agencyData: any) => {
         try {
-            const response = await partnerApiClient.put(`/agency/${id}`, agencyData);
+            const response = await partnerApiClient.put(`/agency/${id}`, agencyData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to update agency", error);
@@ -73,7 +78,7 @@ export const PartnerAPI = {
      */
     deleteAgency: async (id: number) => {
         try {
-            await partnerApiClient.delete(`/agency/${id}`);
+            await partnerApiClient.delete(`/agency/${id}`, getAuthHeaders());
         } catch (error) {
             console.error("Failed to delete agency", error);
             throw error;
@@ -85,7 +90,7 @@ export const PartnerAPI = {
      */
     getAssignedTourists: async (agencyId: number) => {
         try {
-            const response = await partnerApiClient.get(`/agency/${agencyId}/tourists`);
+            const response = await partnerApiClient.get(`/agency/${agencyId}/tourists`, getAuthHeaders());
             return response.data; // List<Long> of tourist IDs
         } catch (error) {
             console.error("Failed to get assigned tourists", error);
@@ -166,7 +171,7 @@ export const HotelAPI = {
      */
     createHotel: async (hotelData: any) => {
         try {
-            const response = await partnerApiClient.post('/hotel', hotelData);
+            const response = await partnerApiClient.post('/hotel', hotelData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to create hotel", error);
@@ -179,7 +184,7 @@ export const HotelAPI = {
      */
     getAllHotels: async () => {
         try {
-            const response = await partnerApiClient.get('/hotel');
+            const response = await partnerApiClient.get('/hotel', getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to get all hotels", error);
@@ -192,7 +197,7 @@ export const HotelAPI = {
      */
     updateHotel: async (id: number, hotelData: any) => {
         try {
-            const response = await partnerApiClient.put(`/hotel/${id}`, hotelData);
+            const response = await partnerApiClient.put(`/hotel/${id}`, hotelData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to update hotel", error);
@@ -205,7 +210,7 @@ export const HotelAPI = {
      */
     deleteHotel: async (id: number) => {
         try {
-            await partnerApiClient.delete(`/hotel/${id}`);
+            await partnerApiClient.delete(`/hotel/${id}`, getAuthHeaders());
         } catch (error) {
             console.error("Failed to delete hotel", error);
             throw error;
@@ -221,7 +226,7 @@ export const HotelCheckInAPI = {
      */
     checkInTourist: async (hotelId: number, touristId: number) => {
         try {
-            const response = await partnerApiClient.post(`/v1/hotelCheckIn/${hotelId}/assign-tourist/${touristId}`);
+            const response = await partnerApiClient.post(`/v1/hotelCheckIn/${hotelId}/assign-tourist/${touristId}`, {}, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to check in tourist", error);
@@ -234,7 +239,7 @@ export const HotelCheckInAPI = {
      */
     getCheckedInTourists: async (hotelId: number) => {
         try {
-            const response = await partnerApiClient.get(`/v1/hotelCheckIn/${hotelId}/tourists`);
+            const response = await partnerApiClient.get(`/v1/hotelCheckIn/${hotelId}/tourists`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch checked-in tourists", error);
@@ -244,7 +249,7 @@ export const HotelCheckInAPI = {
 
     getTouristTravelHistory: async (touristId: number) => {
         try {
-            const response = await partnerApiClient.get(`/v1/hotelCheckIn/tourist/${touristId}/history`);
+            const response = await partnerApiClient.get(`/v1/hotelCheckIn/tourist/${touristId}/history`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch tourist travel history", error);

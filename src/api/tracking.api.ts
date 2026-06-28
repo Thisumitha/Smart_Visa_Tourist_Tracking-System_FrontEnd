@@ -1,3 +1,8 @@
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('accessToken');
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
+
 export const TrackingAPI = {
     /**
      * Hotel/Agency: Log a tourist's location (Check-in)

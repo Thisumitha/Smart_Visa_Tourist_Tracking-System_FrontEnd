@@ -1,12 +1,17 @@
 import { touristApiClient } from '../config/api.config';
 
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('accessToken');
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
+
 export const TouristAPI = {
     /**
      * Admin/Immigration: Register a new tourist via the real backend
      */
     registerTourist: async (touristData: any) => {
         try {
-            const response = await touristApiClient.post('/tourists', touristData);
+            const response = await touristApiClient.post('/tourists', touristData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to register tourist", error);
@@ -19,7 +24,7 @@ export const TouristAPI = {
      */
     getAllTourists: async () => {
         try {
-            const response = await touristApiClient.get('/tourists');
+            const response = await touristApiClient.get('/tourists', getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch tourists", error);
@@ -32,7 +37,7 @@ export const TouristAPI = {
      */
     getTouristById: async (id: number) => {
         try {
-            const response = await touristApiClient.get(`/tourists/${id}`);
+            const response = await touristApiClient.get(`/tourists/${id}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error(`Failed to fetch tourist with ID ${id}`, error);
@@ -45,7 +50,7 @@ export const TouristAPI = {
      */
     updateTourist: async (id: number, touristData: any) => {
         try {
-            const response = await touristApiClient.put(`/tourists/${id}`, touristData);
+            const response = await touristApiClient.put(`/tourists/${id}`, touristData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to update tourist", error);
@@ -58,7 +63,7 @@ export const TouristAPI = {
      */
     deleteTourist: async (id: number) => {
         try {
-            await touristApiClient.delete(`/tourists/${id}`);
+            await touristApiClient.delete(`/tourists/${id}`, getAuthHeaders());
         } catch (error) {
             console.error("Failed to delete tourist", error);
             throw error;
@@ -91,7 +96,7 @@ export const TouristAPI = {
      */
     getHotelTouristView: async (passportNumber: string) => {
         try {
-            const response = await touristApiClient.get(`/tourists/hotel-view?passportNumber=${passportNumber}`);
+            const response = await touristApiClient.get(`/tourists/hotel-view?passportNumber=${passportNumber}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch hotel tourist view", error);
@@ -106,7 +111,7 @@ export const PassportAPI = {
      */
     createPassport: async (touristId: number, passportData: any) => {
         try {
-            const response = await touristApiClient.post(`/passports/tourist/${touristId}`, passportData);
+            const response = await touristApiClient.post(`/passports/tourist/${touristId}`, passportData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to create passport", error);
@@ -119,7 +124,7 @@ export const PassportAPI = {
      */
     getAllPassports: async () => {
         try {
-            const response = await touristApiClient.get(`/passports`);
+            const response = await touristApiClient.get(`/passports`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch all passports", error);
@@ -132,7 +137,7 @@ export const PassportAPI = {
      */
     getPassportsByTouristId: async (touristId: number) => {
         try {
-            const response = await touristApiClient.get(`/passports/tourist/${touristId}`);
+            const response = await touristApiClient.get(`/passports/tourist/${touristId}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch passports", error);
@@ -145,7 +150,7 @@ export const PassportAPI = {
      */
     updatePassport: async (id: number, touristId: number, passportData: any) => {
         try {
-            const response = await touristApiClient.put(`/passports/${id}/tourist/${touristId}`, passportData);
+            const response = await touristApiClient.put(`/passports/${id}/tourist/${touristId}`, passportData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to update passport", error);
@@ -158,7 +163,7 @@ export const PassportAPI = {
      */
     deletePassport: async (id: number) => {
         try {
-            await touristApiClient.delete(`/passports/${id}`);
+            await touristApiClient.delete(`/passports/${id}`, getAuthHeaders());
         } catch (error) {
             console.error("Failed to delete passport", error);
             throw error;
@@ -169,7 +174,7 @@ export const PassportAPI = {
 export const EntryAPI = {
     markArrival: async (touristId: number, data: { airport: string, entryDate: string }) => {
         try {
-            const response = await touristApiClient.post(`/entry-records/tourist/${touristId}`, data);
+            const response = await touristApiClient.post(`/entry-records/tourist/${touristId}`, data, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to mark arrival", error);
@@ -178,7 +183,7 @@ export const EntryAPI = {
     },
     getAllEntryRecords: async () => {
         try {
-            const response = await touristApiClient.get(`/entry-records`);
+            const response = await touristApiClient.get(`/entry-records`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to get all entry records", error);
@@ -187,7 +192,7 @@ export const EntryAPI = {
     },
     getEntryRecordsByTouristId: async (touristId: number) => {
         try {
-            const response = await touristApiClient.get(`/entry-records/tourist/${touristId}`);
+            const response = await touristApiClient.get(`/entry-records/tourist/${touristId}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to get entry records for tourist", error);
@@ -199,7 +204,7 @@ export const EntryAPI = {
 export const ExitAPI = {
     markDeparture: async (touristId: number, data: { airport: string, exitDate: string }) => {
         try {
-            const response = await touristApiClient.post(`/exit-records/tourist/${touristId}`, data);
+            const response = await touristApiClient.post(`/exit-records/tourist/${touristId}`, data, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to mark departure", error);
@@ -208,7 +213,7 @@ export const ExitAPI = {
     },
     getAllExitRecords: async () => {
         try {
-            const response = await touristApiClient.get(`/exit-records`);
+            const response = await touristApiClient.get(`/exit-records`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to get all exit records", error);
@@ -217,7 +222,7 @@ export const ExitAPI = {
     },
     getExitRecordsByTouristId: async (touristId: number) => {
         try {
-            const response = await touristApiClient.get(`/exit-records/tourist/${touristId}`);
+            const response = await touristApiClient.get(`/exit-records/tourist/${touristId}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to get exit records for tourist", error);
@@ -229,7 +234,7 @@ export const ExitAPI = {
 export const EmergencyContactAPI = {
     getContactsByTouristId: async (touristId: number) => {
         try {
-            const response = await touristApiClient.get(`/emergency-contacts/tourist/${touristId}`);
+            const response = await touristApiClient.get(`/emergency-contacts/tourist/${touristId}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to get emergency contacts", error);
@@ -238,7 +243,7 @@ export const EmergencyContactAPI = {
     },
     createContact: async (touristId: number, data: { name: string, phoneNumber: string, relationship: string }) => {
         try {
-            const response = await touristApiClient.post(`/emergency-contacts/tourist/${touristId}`, data);
+            const response = await touristApiClient.post(`/emergency-contacts/tourist/${touristId}`, data, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to create emergency contact", error);
@@ -247,7 +252,7 @@ export const EmergencyContactAPI = {
     },
     updateContact: async (id: number, touristId: number, data: { name: string, phoneNumber: string, relationship: string }) => {
         try {
-            const response = await touristApiClient.put(`/emergency-contacts/${id}/tourist/${touristId}`, data);
+            const response = await touristApiClient.put(`/emergency-contacts/${id}/tourist/${touristId}`, data, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to update emergency contact", error);

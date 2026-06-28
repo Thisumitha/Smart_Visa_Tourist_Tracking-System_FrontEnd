@@ -1,12 +1,17 @@
 import { trackingApiClient } from '../config/api.config';
 
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('accessToken');
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
+
 export const VisaAPI = {
     /**
      * Get paginated visas
      */
     getAllVisas: async (page = 0, size = 10, sortBy = 'visaId') => {
         try {
-            const response = await trackingApiClient.get(`/visas/all?page=${page}&size=${size}&sortBy=${sortBy}`);
+            const response = await trackingApiClient.get(`/visas/all?page=${page}&size=${size}&sortBy=${sortBy}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch visas", error);
@@ -19,7 +24,7 @@ export const VisaAPI = {
      */
     createVisa: async (visaData: any) => {
         try {
-            const response = await trackingApiClient.post('/visas', visaData);
+            const response = await trackingApiClient.post('/visas', visaData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to create visa", error);
@@ -32,7 +37,7 @@ export const VisaAPI = {
      */
     updateVisa: async (id: number, visaData: any) => {
         try {
-            const response = await trackingApiClient.put(`/visas/update/${id}`, visaData);
+            const response = await trackingApiClient.put(`/visas/update/${id}`, visaData, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to update visa", error);
@@ -45,7 +50,7 @@ export const VisaAPI = {
      */
     partialUpdateVisa: async (id: number, fields: any) => {
         try {
-            const response = await trackingApiClient.patch(`/visas/partialupdate/${id}`, fields);
+            const response = await trackingApiClient.patch(`/visas/partialupdate/${id}`, fields, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to partially update visa", error);
@@ -58,7 +63,7 @@ export const VisaAPI = {
      */
     deleteVisa: async (id: number) => {
         try {
-            await trackingApiClient.delete(`/visas/delete/${id}`);
+            await trackingApiClient.delete(`/visas/delete/${id}`, getAuthHeaders());
         } catch (error) {
             console.error("Failed to delete visa", error);
             throw error;
@@ -70,7 +75,7 @@ export const VisaAPI = {
      */
     searchByPassportId: async (passportId: number, page = 0, size = 10) => {
         try {
-            const response = await trackingApiClient.get(`/visas/search/passport?passportId=${passportId}&page=${page}&size=${size}`);
+            const response = await trackingApiClient.get(`/visas/search/passport?passportId=${passportId}&page=${page}&size=${size}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to search visas by passport", error);
@@ -80,7 +85,7 @@ export const VisaAPI = {
 
     searchByVisaType: async (visaType: string, page = 0, size = 10) => {
         try {
-            const response = await trackingApiClient.get(`/visas/search/type?visaType=${visaType}&page=${page}&size=${size}`);
+            const response = await trackingApiClient.get(`/visas/search/type?visaType=${visaType}&page=${page}&size=${size}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to search visas by type", error);
@@ -92,7 +97,7 @@ export const VisaAPI = {
 export const VisaExtensionAPI = {
     getAllVisaExtensions: async (page = 0, size = 10, sortBy = 'extensionId') => {
         try {
-            const response = await trackingApiClient.get(`/visaextensions/all?page=${page}&size=${size}&sortBy=${sortBy}`);
+            const response = await trackingApiClient.get(`/visaextensions/all?page=${page}&size=${size}&sortBy=${sortBy}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch visa extensions", error);
@@ -101,7 +106,7 @@ export const VisaExtensionAPI = {
     },
     createVisaExtension: async (data: { visaId: number, extendedDate: string, reason: string }) => {
         try {
-            const response = await trackingApiClient.post('/visaextensions', data);
+            const response = await trackingApiClient.post('/visaextensions', data, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to create visa extension", error);
@@ -113,7 +118,7 @@ export const VisaExtensionAPI = {
 export const TravelLogAPI = {
     getAllTravelLogs: async (page = 0, size = 1000, sortBy = 'logId') => {
         try {
-            const response = await trackingApiClient.get(`/travellogs/all?page=${page}&size=${size}&sortBy=${sortBy}`);
+            const response = await trackingApiClient.get(`/travellogs/all?page=${page}&size=${size}&sortBy=${sortBy}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch travel logs", error);
@@ -122,7 +127,7 @@ export const TravelLogAPI = {
     },
     getLogsByTouristId: async (touristId: number, page = 0, size = 1000) => {
         try {
-            const response = await trackingApiClient.get(`/travellogs/search/tourist?touristId=${touristId}&page=${page}&size=${size}`);
+            const response = await trackingApiClient.get(`/travellogs/search/tourist?touristId=${touristId}&page=${page}&size=${size}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to fetch travel logs for tourist", error);
@@ -131,7 +136,7 @@ export const TravelLogAPI = {
     },
     createTravelLog: async (data: { touristId: number, location: string, checkInDate: string, checkOutDate: string }) => {
         try {
-            const response = await trackingApiClient.post('/travellogs', data);
+            const response = await trackingApiClient.post('/travellogs', data, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to create travel log", error);
@@ -141,7 +146,7 @@ export const TravelLogAPI = {
     updateTravelLog: async (id: number, data: { location: string, checkInDate: string, checkOutDate: string }) => {
         try {
             // Using partial update for flexibility
-            const response = await trackingApiClient.patch(`/travellogs/partialupdate/${id}`, data);
+            const response = await trackingApiClient.patch(`/travellogs/partialupdate/${id}`, data, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to update travel log", error);
@@ -150,7 +155,7 @@ export const TravelLogAPI = {
     },
     deleteTravelLog: async (id: number) => {
         try {
-            await trackingApiClient.delete(`/travellogs/delete/${id}`);
+            await trackingApiClient.delete(`/travellogs/delete/${id}`, getAuthHeaders());
         } catch (error) {
             console.error("Failed to delete travel log", error);
             throw error;

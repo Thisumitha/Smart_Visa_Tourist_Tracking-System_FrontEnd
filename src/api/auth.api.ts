@@ -1,5 +1,10 @@
 import { authApiClient } from '../config/api.config';
 
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('accessToken');
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
+
 export const AuthAPI = {
     /**
      * Authenticates a user and returns a JWT token.
@@ -13,7 +18,7 @@ export const AuthAPI = {
      * Registers a new user. (Secured Endpoint - Requires Admin Token)
      */
     registerUser: async (userData: { email: string; password: string; roles: string[] }) => {
-        const response = await authApiClient.post('/users', userData);
+        const response = await authApiClient.post('/users', userData, getAuthHeaders());
         return response.data;
     }
 };
