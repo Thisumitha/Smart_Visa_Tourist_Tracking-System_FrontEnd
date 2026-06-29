@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TouristAPI } from '../../api/tourist.api';
 import { ShieldCheck, UserPlus, FileText, Globe, Calendar } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import ImmigrationSidebar from '../../components/ImmigrationSidebar';
+import PillNav from '../../components/PillNav';
 import RegistrationWizard from '../../components/RegistrationWizard';
 import TouristOverview from '../../components/TouristOverview';
 import AirportDuty from '../../components/AirportDuty';
@@ -11,6 +11,40 @@ import TouristManagement from '../../components/TouristManagement';
 import PassportManagement from '../../components/PassportManagement';
 import VisaManagement from '../../components/VisaManagement';
 import VisaExtensionManagement from '../../components/VisaExtensionManagement';
+import { LayoutDashboard, History, Book } from 'lucide-react';
+
+const immigrationNavItems = [
+    {
+        id: 'overview-group',
+        label: 'Overview',
+        icon: <LayoutDashboard size={15} />,
+        children: [
+            { id: 'dashboard', label: 'Profiling', icon: <LayoutDashboard size={13} /> },
+            { id: 'tourist-overview', label: 'Tourist Overview', icon: <Globe size={13} /> },
+        ]
+    },
+    {
+        id: 'operations-group',
+        label: 'Operations',
+        icon: <ShieldCheck size={15} />,
+        children: [
+            { id: 'wizard', label: 'New Registration', icon: <UserPlus size={13} /> },
+            { id: 'airport-duty', label: 'Airport Duty', icon: <ShieldCheck size={13} /> },
+            { id: 'travel-logs', label: 'Travel Logs', icon: <History size={13} /> },
+        ]
+    },
+    {
+        id: 'management-group',
+        label: 'Management',
+        icon: <FileText size={15} />,
+        children: [
+            { id: 'tourists', label: 'Manage Tourists', icon: <Globe size={13} /> },
+            { id: 'passports', label: 'Passports', icon: <Book size={13} /> },
+            { id: 'visas', label: 'Visas', icon: <FileText size={13} /> },
+            { id: 'extensions', label: 'Extensions', icon: <History size={13} /> },
+        ]
+    }
+];
 
 const ImmigrationDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -60,89 +94,100 @@ const ImmigrationDashboard: React.FC = () => {
 
         // Default Dashboard (Automated Profiling)
         return (
-            <div className="max-w-3xl mx-auto mt-8 relative z-10">
-                <div className="glass-panel rounded-2xl p-8 shadow-2xl border border-emerald-500/20">
+            <div className="max-w-3xl mx-auto mt-4">
+                <div className="glass-panel rounded-2xl p-8 shadow-card">
                     <div className="mb-8">
-                        <h1 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-                            <UserPlus className="text-emerald-400" /> Automated Tourist Profiling
+                        <h1 className="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                            <UserPlus className="text-slate-500" size={22} /> Automated Tourist Profiling
                         </h1>
-                        <p className="text-slate-400">Register new arrivals into the national tracking system.</p>
+                        <p className="text-slate-500">Register new arrivals into the national tracking system.</p>
                     </div>
 
                     {successMsg && (
-                        <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/50 rounded-xl text-emerald-400 text-sm font-medium flex items-center gap-2">
-                            <ShieldCheck size={18} /> {successMsg}
+                        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm font-medium flex items-center gap-2">
+                            <ShieldCheck size={16} /> {successMsg}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">Full Name</label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                        <FileText size={18} />
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <FileText size={16} />
                                     </div>
-                                    <input type="text" name="fullName" required value={formData.fullName} onChange={handleChange} className="block w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="John Doe" />
+                                    <input type="text" name="fullName" required value={formData.fullName} onChange={handleChange}
+                                        className="input-light pl-10" placeholder="John Doe" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Passport Number</label>
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">Passport Number</label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                        <ShieldCheck size={18} />
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <ShieldCheck size={16} />
                                     </div>
-                                    <input type="text" name="passportNumber" required value={formData.passportNumber} onChange={handleChange} className="block w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all uppercase" placeholder="AB123456" />
+                                    <input type="text" name="passportNumber" required value={formData.passportNumber} onChange={handleChange}
+                                        className="input-light pl-10 uppercase" placeholder="AB123456" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Nationality</label>
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">Nationality</label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                        <Globe size={18} />
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <Globe size={16} />
                                     </div>
-                                    <input type="text" name="nationality" required value={formData.nationality} onChange={handleChange} className="block w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="e.g. United Kingdom" />
+                                    <input type="text" name="nationality" required value={formData.nationality} onChange={handleChange}
+                                        className="input-light pl-10" placeholder="e.g. United Kingdom" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">Email Address</label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                        <UserPlus size={18} />
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <UserPlus size={16} />
                                     </div>
-                                    <input type="email" name="email" required value={formData.email} onChange={handleChange} className="block w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="tourist@example.com" />
+                                    <input type="email" name="email" required value={formData.email} onChange={handleChange} 
+                                        className="input-light pl-10" placeholder="tourist@example.com" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Visa Type</label>
-                                <select name="visaType" value={formData.visaType} onChange={handleChange} className="block w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none">
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">Visa Type</label>
+                                <select name="visaType" value={formData.visaType} onChange={handleChange}
+                                    className="input-light appearance-none">
                                     <option>Tourist</option>
                                     <option>Business</option>
                                     <option>Transit</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Issue Date</label>
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">Issue Date</label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                        <Calendar size={18} />
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <Calendar size={16} />
                                     </div>
-                                    <input type="date" name="issueDate" required value={formData.issueDate} onChange={handleChange} className="block w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" />
+                                    <input type="date" name="issueDate" required value={formData.issueDate} onChange={handleChange}
+                                        className="input-light pl-10" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Expiry Date</label>
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">Expiry Date</label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                        <Calendar size={18} />
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <Calendar size={16} />
                                     </div>
-                                    <input type="date" name="expiryDate" required value={formData.expiryDate} onChange={handleChange} className="block w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" />
+                                    <input type="date" name="expiryDate" required value={formData.expiryDate} onChange={handleChange}
+                                        className="input-light pl-10" />
                                 </div>
                             </div>
                         </div>
-                        
-                        <button type="submit" disabled={loading} className="w-full py-4 mt-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50">
-                            {loading ? 'Registering Profile...' : 'Create Centralized Profile'}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="btn-primary w-full py-3 mt-2"
+                        >
+                            {loading ? 'Registering Profile...' : 'Create Centralised Profile'}
                         </button>
                     </form>
                 </div>
@@ -151,34 +196,22 @@ const ImmigrationDashboard: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 flex text-slate-200">
-            {/* Sidebar Component */}
-            <ImmigrationSidebar 
-                activeTab={activeTab} 
+        <div className="min-h-screen text-slate-800">
+            {/* Floating Pill Navigation */}
+            <PillNav
+                logoIcon={<ShieldCheck size={18} />}
+                logoLabel="Immigration Control"
+                navItems={immigrationNavItems}
+                activeTab={activeTab}
                 onTabChange={(newTab) => {
                     navigate(`/immigration/${newTab}`);
                     setSuccessMsg('');
-                }} 
+                }}
             />
 
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col h-screen overflow-hidden bg-[url('https://images.unsplash.com/photo-1551041777-ed277b8dd348?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center bg-fixed relative">
-                <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-0"></div>
-
-                <header className="h-20 glass-panel border-x-0 border-t-0 rounded-none flex items-center justify-between px-8 z-10 relative">
-                    <h2 className="text-xl font-semibold text-white capitalize">
-                        {activeTab === 'dashboard' ? 'Automated Tourist Profiling' : `Manage ${activeTab.replace('-', ' ')}`}
-                    </h2>
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-bold border-2 border-slate-800 shadow-lg">
-                            IO
-                        </div>
-                    </div>
-                </header>
-
-                <div className="flex-1 overflow-y-auto p-8 relative z-10">
-                    {renderContent()}
-                </div>
+            {/* Main Content Canvas */}
+            <main className="dashboard-canvas pb-8">
+                {renderContent()}
             </main>
         </div>
     );

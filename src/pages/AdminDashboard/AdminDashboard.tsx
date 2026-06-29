@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, UserPlus } from 'lucide-react';
+import { Save, UserPlus, ShieldCheck, Globe, History, Book, FileText, Bell, Briefcase, Building2, LayoutDashboard } from 'lucide-react';
 import { AuthAPI } from '../../api/auth.api';
 
-import AdminSidebar from '../../components/AdminSidebar';
+import PillNav from '../../components/PillNav';
 import TouristManagement from '../../components/TouristManagement';
 import VisaManagement from '../../components/VisaManagement';
 import AlertManagement from '../../components/AlertManagement';
@@ -17,19 +17,61 @@ import AgencyManagement from '../../components/AgencyManagement';
 import HotelManagement from '../../components/HotelManagement';
 import VisaExtensionManagement from '../../components/VisaExtensionManagement';
 
+const adminNavItems = [
+    {
+        id: 'overview-group',
+        label: 'Overview',
+        icon: <LayoutDashboard size={15} />,
+        children: [
+            { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={13} /> },
+            { id: 'tourist-overview', label: 'Tourist Analytics', icon: <Globe size={13} /> },
+        ]
+    },
+    {
+        id: 'operations-group',
+        label: 'Operations',
+        icon: <ShieldCheck size={15} />,
+        children: [
+            { id: 'wizard', label: 'New Registration', icon: <UserPlus size={13} /> },
+            { id: 'airport-duty', label: 'Airport Duty', icon: <ShieldCheck size={13} /> },
+            { id: 'travel-logs', label: 'Travel Logs', icon: <History size={13} /> },
+        ]
+    },
+    {
+        id: 'management-group',
+        label: 'Management',
+        icon: <FileText size={15} />,
+        children: [
+            { id: 'tourists', label: 'Manage Tourists', icon: <Globe size={13} /> },
+            { id: 'passports', label: 'Passports', icon: <Book size={13} /> },
+            { id: 'visas', label: 'Visas', icon: <FileText size={13} /> },
+            { id: 'extensions', label: 'Extensions', icon: <History size={13} /> },
+        ]
+    },
+    {
+        id: 'system-group',
+        label: 'System Config',
+        icon: <Building2 size={15} />,
+        children: [
+            { id: 'alerts', label: 'Alerts', icon: <Bell size={13} /> },
+            { id: 'users', label: 'Users', icon: <UserPlus size={13} /> },
+            { id: 'agencies', label: 'Agencies', icon: <Briefcase size={13} /> },
+            { id: 'hotels', label: 'Hotels', icon: <Building2 size={13} /> },
+        ]
+    }
+];
+
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
     const { tab } = useParams<{ tab: string }>();
     const activeTab = tab || 'dashboard';
-    
+
     // Form states
     const [userForm, setUserForm] = useState({ email: '', password: '', role: 'ADMIN' });
-    
+
     // UI states
     const [registerStatus, setRegisterStatus] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
-
-    // Removed overview useEffect
 
     const handleRegisterUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -51,67 +93,62 @@ const AdminDashboard: React.FC = () => {
     };
 
     const renderContent = () => {
-        if (activeTab === 'dashboard') {
-            return <VisaDashboard />;
-        }
-
-        if (activeTab === 'wizard') {
-            return <RegistrationWizard />;
-        }
-
-        if (activeTab === 'tourist-overview') {
-            return <TouristOverview />;
-        }
-
-        if (activeTab === 'airport-duty') {
-            return <AirportDuty />;
-        }
-
-        if (activeTab === 'travel-logs') {
-            return <TravelLogs />;
-        }
-
-        if (activeTab === 'tourists') {
-            return <TouristManagement />;
-        }
-
-        if (activeTab === 'passports') {
-            return <PassportManagement />;
-        }
-
-        if (activeTab === 'visas') {
-            return <VisaManagement />;
-        }
-
-        if (activeTab === 'extensions') {
-            return <VisaExtensionManagement />;
-        }
-
-        if (activeTab === 'alerts') {
-            return <AlertManagement />;
-        }
+        if (activeTab === 'dashboard') return <VisaDashboard />;
+        if (activeTab === 'wizard') return <RegistrationWizard />;
+        if (activeTab === 'tourist-overview') return <TouristOverview />;
+        if (activeTab === 'airport-duty') return <AirportDuty />;
+        if (activeTab === 'travel-logs') return <TravelLogs />;
+        if (activeTab === 'tourists') return <TouristManagement />;
+        if (activeTab === 'passports') return <PassportManagement />;
+        if (activeTab === 'visas') return <VisaManagement />;
+        if (activeTab === 'extensions') return <VisaExtensionManagement />;
+        if (activeTab === 'alerts') return <AlertManagement />;
+        if (activeTab === 'agencies') return <AgencyManagement />;
+        if (activeTab === 'hotels') return <HotelManagement />;
 
         if (activeTab === 'users') {
             return (
                 <div className="max-w-2xl mx-auto">
                     <div className="glass-panel rounded-2xl p-8">
-                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                            <UserPlus className="text-blue-400" /> Create System User
+                        <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                            <UserPlus className="text-slate-500" size={22} /> Create System User
                         </h2>
-                        {registerStatus && <div className="mb-6 p-4 bg-blue-500/10 text-blue-400 rounded-xl text-sm font-medium border border-blue-500/20">{registerStatus}</div>}
-                        
-                        <form onSubmit={handleRegisterUser} className="space-y-6">
+                        {registerStatus && (
+                            <div className="mb-6 p-4 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium border border-slate-200">
+                                {registerStatus}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleRegisterUser} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
-                                <input type="email" required value={userForm.email} onChange={e => setUserForm({...userForm, email: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="agency@smartvisa.com" />
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">Email Address</label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={userForm.email}
+                                    onChange={e => setUserForm({ ...userForm, email: e.target.value })}
+                                    className="input-light"
+                                    placeholder="agency@smartvisa.com"
+                                />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-                                <input type="password" required value={userForm.password} onChange={e => setUserForm({...userForm, password: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••" />
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">Password</label>
+                                <input
+                                    type="password"
+                                    required
+                                    value={userForm.password}
+                                    onChange={e => setUserForm({ ...userForm, password: e.target.value })}
+                                    className="input-light"
+                                    placeholder="••••••••"
+                                />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">System Role</label>
-                                <select value={userForm.role} onChange={e => setUserForm({...userForm, role: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
+                                <label className="block text-sm font-medium text-slate-600 mb-1.5">System Role</label>
+                                <select
+                                    value={userForm.role}
+                                    onChange={e => setUserForm({ ...userForm, role: e.target.value })}
+                                    className="input-light appearance-none"
+                                >
                                     <option value="ADMIN">System Admin</option>
                                     <option value="IMMIGRATION_OFFICER">Immigration Officer</option>
                                     <option value="HOTEL_STAFF">Hotel Staff</option>
@@ -119,51 +156,37 @@ const AdminDashboard: React.FC = () => {
                                     <option value="TOURIST_POLICE">Tourist Police</option>
                                 </select>
                             </div>
-                            <button type="submit" disabled={isRegistering} className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-all flex justify-center items-center gap-2">
-                                {isRegistering ? 'Registering...' : <><Save size={18} /> Register User via API</>}
+                            <button
+                                type="submit"
+                                disabled={isRegistering}
+                                className="btn-primary w-full py-3 mt-2"
+                            >
+                                {isRegistering ? 'Registering...' : <><Save size={16} /> Register User via API</>}
                             </button>
                         </form>
                     </div>
                 </div>
             );
         }
-
-        if (activeTab === 'agencies') {
-            return <AgencyManagement />;
-        }
-
-        if (activeTab === 'hotels') {
-            return <HotelManagement />;
-        }
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 flex text-slate-200">
-            {/* Sidebar Component */}
-            <AdminSidebar 
-                activeTab={activeTab} 
+        <div className="min-h-screen text-slate-800">
+            {/* Floating Pill Navigation */}
+            <PillNav
+                logoIcon={<ShieldCheck size={18} />}
+                logoLabel="SmartVisa Admin"
+                navItems={adminNavItems}
+                activeTab={activeTab}
                 onTabChange={(newTab) => {
                     navigate(`/admin/${newTab}`);
                     setRegisterStatus('');
-                }} 
+                }}
             />
 
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col h-screen overflow-hidden">
-                <header className="h-20 glass-panel border-x-0 border-t-0 rounded-none flex items-center justify-between px-8 z-10">
-                    <h2 className="text-xl font-semibold text-white capitalize">
-                        {activeTab === 'dashboard' ? 'Visa Tracking Dashboard' : `Manage ${activeTab}`}
-                    </h2>
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-slate-800 shadow-lg">
-                            A
-                        </div>
-                    </div>
-                </header>
-
-                <div className="flex-1 overflow-y-auto p-8 bg-gradient-to-b from-slate-900 to-slate-950">
-                    {renderContent()}
-                </div>
+            {/* Main Content Canvas */}
+            <main className="dashboard-canvas pb-8">
+                {renderContent()}
             </main>
         </div>
     );
