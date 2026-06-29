@@ -25,7 +25,8 @@ const ImmigrationDashboard: React.FC = () => {
         nationality: '',
         visaType: 'Tourist',
         issueDate: '',
-        expiryDate: ''
+        expiryDate: '',
+        email: ''
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -39,7 +40,7 @@ const ImmigrationDashboard: React.FC = () => {
         try {
             await TouristAPI.registerTourist(formData);
             setSuccessMsg(`Successfully registered profile for passport ${formData.passportNumber}`);
-            setFormData({ fullName: '', passportNumber: '', nationality: '', visaType: 'Tourist', issueDate: '', expiryDate: '' });
+            setFormData({ fullName: '', passportNumber: '', nationality: '', visaType: 'Tourist', issueDate: '', expiryDate: '', email: '' });
         } catch (error) {
             console.error(error);
         } finally {
@@ -101,6 +102,15 @@ const ImmigrationDashboard: React.FC = () => {
                                         <Globe size={18} />
                                     </div>
                                     <input type="text" name="nationality" required value={formData.nationality} onChange={handleChange} className="block w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="e.g. United Kingdom" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                                        <UserPlus size={18} />
+                                    </div>
+                                    <input type="email" name="email" required value={formData.email} onChange={handleChange} className="block w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="tourist@example.com" />
                                 </div>
                             </div>
                             <div>

@@ -13,7 +13,7 @@ const RegistrationWizard: React.FC = () => {
     const [passportId, setPassportId] = useState<number | null>(null);
 
     // Forms
-    const [touristForm, setTouristForm] = useState({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
+    const [touristForm, setTouristForm] = useState({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male', email: '' });
     const [passportForm, setPassportForm] = useState({ passportNumber: '', issueDate: '', expiryDate: '' });
     const [visaForm, setVisaForm] = useState({ visaId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
 
@@ -74,7 +74,7 @@ const RegistrationWizard: React.FC = () => {
         setStep(1);
         setTouristId(null);
         setPassportId(null);
-        setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
+        setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male', email: '' });
         setPassportForm({ passportNumber: '', issueDate: '', expiryDate: '' });
         setVisaForm({ visaId: '', visaType: 'Tourist', issueDate: '', expiryDate: '', status: 'Active' });
     };
@@ -140,6 +140,10 @@ const RegistrationWizard: React.FC = () => {
                                     <option>Female</option>
                                     <option>Other</option>
                                 </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                                <input type="email" required value={touristForm.email} onChange={e => setTouristForm({...touristForm, email: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="tourist@example.com" />
                             </div>
                             <div className="md:col-span-2 flex justify-end mt-4">
                                 <button type="submit" disabled={loading} className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all flex items-center gap-2">

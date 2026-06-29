@@ -11,7 +11,7 @@ const TouristManagement: React.FC = () => {
 
     // Tourist Form
     const [searchQuery, setSearchQuery] = useState('');
-    const [touristForm, setTouristForm] = useState({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
+    const [touristForm, setTouristForm] = useState({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male', email: '' });
     const [editingId, setEditingId] = useState<number | null>(null);
     // UI states
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,7 +100,7 @@ const TouristManagement: React.FC = () => {
                 });
             }
             // Reset form
-            setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
+            setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male', email: '' });
             setEditingId(null);
             fetchManageTourists(); // Refresh list
         } catch (error: any) {
@@ -124,14 +124,15 @@ const TouristManagement: React.FC = () => {
             lastName: tourist.lastName,
             nationality: tourist.nationality,
             dateOfBirth: tourist.dateOfBirth,
-            gender: tourist.gender || 'Male'
+            gender: tourist.gender || 'Male',
+            email: tourist.email || ''
         });
         window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll up to the form
     };
 
     const handleCancelEdit = () => {
         setEditingId(null);
-        setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male' });
+        setTouristForm({ firstName: '', lastName: '', nationality: '', dateOfBirth: '', gender: 'Male', email: '' });
     };
 
     const handleDeleteTourist = async (id: number) => {
@@ -309,6 +310,10 @@ const TouristManagement: React.FC = () => {
                             <option>Female</option>
                             <option>Other</option>
                         </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                        <input type="email" required value={touristForm.email} onChange={e => setTouristForm({...touristForm, email: e.target.value})} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="tourist@example.com" />
                     </div>
                     <div className="md:col-span-2 flex justify-end mt-4">
                         <button type="submit" disabled={isSubmitting} className={`px-8 py-3 text-white rounded-xl font-medium transition-all flex items-center gap-2 ${editingId ? 'bg-blue-600 hover:bg-blue-500' : 'bg-emerald-600 hover:bg-emerald-500'}`}>
