@@ -5,18 +5,16 @@ import axios from 'axios';
 // ==========================================
 const IS_PRODUCTION = true; // Change to true when deploying to your VPS
 
-const LOCAL_IP = 'http://localhost';
-const PROD_IP = 'http://207.180.253.221';
-const BASE_IP = IS_PRODUCTION ? PROD_IP : LOCAL_IP;
+// Remove old PROD_IP and BASE_IP completely.
 
 // ==========================================
 // Microservice Base URLs
 // ==========================================
-export const AUTH_API_URL = `${BASE_IP}:8082/api`;
-export const TOURIST_API_URL = `${BASE_IP}:8084/api`;
-export const TRACKING_API_URL = `${BASE_IP}:8085/api`;
-export const ALERT_API_URL = `${BASE_IP}:8081/api`;
-export const PARTNER_API_URL = `${BASE_IP}:8083/api`;
+export const AUTH_API_URL = IS_PRODUCTION ? 'https://authentication-service.panthiya.edu.lk/api' : 'http://localhost:8082/api';
+export const TOURIST_API_URL = IS_PRODUCTION ? 'https://tourist-service.panthiya.edu.lk/api' : 'http://localhost:8084/api';
+export const TRACKING_API_URL = IS_PRODUCTION ? 'https://visa-tracking-service.panthiya.edu.lk/api' : 'http://localhost:8085/api';
+export const ALERT_API_URL = IS_PRODUCTION ? 'https://alert-audit-service.panthiya.edu.lk/api' : 'http://localhost:8081/api';
+export const PARTNER_API_URL = IS_PRODUCTION ? 'https://partner-service.panthiya.edu.lk/api' : 'http://localhost:8083/api';
 
 
 
