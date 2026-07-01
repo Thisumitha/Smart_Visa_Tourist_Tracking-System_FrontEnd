@@ -142,12 +142,12 @@ export const PartnerAPI = {
             const email = localStorage.getItem('userEmail') || '';
             if (email) {
                 // Try to match directly by email
-                const matched = agencies.find(a => a.email === email);
+                const matched = agencies.find((a: any) => a.email === email);
                 if (matched) return matched;
                 
                 // Fallback: match by prefix if email is missing from DB
                 const prefix = email.split('@')[0].toLowerCase();
-                const matchedPrefix = agencies.find(a => a.agencyName?.toLowerCase().includes(prefix) || prefix.includes(a.agencyName?.toLowerCase().replace(/\s/g, '')));
+                const matchedPrefix = agencies.find((a: any) => a.agencyName?.toLowerCase().includes(prefix) || prefix.includes(a.agencyName?.toLowerCase().replace(/\s/g, '')));
                 if (matchedPrefix) return matchedPrefix;
             }
             
