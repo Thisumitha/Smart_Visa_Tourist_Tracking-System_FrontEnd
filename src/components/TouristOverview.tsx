@@ -77,25 +77,20 @@ const TouristOverview: React.FC<TouristOverviewProps> = ({ agencyMode = false })
 
             // Fetch agency mappings
             try {
-                const agenciesData = await PartnerAPI.getAllAgencies();
-                const agencies = Array.isArray(agenciesData) ? agenciesData : (agenciesData?.content || []);
-                
-
-                
+                const myAgency = await PartnerAPI.getMyAgency();
                 const mapping: Record<number, any> = {};
                 
-                // For each agency, get its assigned tourists
-                await Promise.all(agencies.map(async (agency: any) => {
+                if (myAgency) {
                     try {
-                        const touristIdsData = await PartnerAPI.getAssignedTourists(agency.agencyId);
+                        const touristIdsData = await PartnerAPI.getAssignedTourists(myAgency.agencyId);
                         const touristIds = Array.isArray(touristIdsData) ? touristIdsData : (touristIdsData?.content || []);
                         touristIds.forEach((tId: number) => {
-                            mapping[tId] = agency;
+                            mapping[tId] = myAgency;
                         });
                     } catch (e) {
-                        console.error(`Failed mapping for agency ${agency.agencyId}`, e);
+                        console.error(`Failed mapping for agency ${myAgency.agencyId}`, e);
                     }
-                }));
+                }
                 
                 setTouristAgencyMap(mapping);
             } catch (err) {
@@ -202,8 +197,9 @@ const TouristOverview: React.FC<TouristOverviewProps> = ({ agencyMode = false })
 
     const filteredTourists = tourists.filter(t => {
         if (agencyMode) {
-            // For demonstration purposes, we are disabling the strict agency filter 
-            // so you can see all tourists in the system. Assigned tourists will have a badge.
+            if (!touristAgencyMap[t.touristId]) {
+                return false;
+            }
         }
 
         if (!searchQuery) return true;

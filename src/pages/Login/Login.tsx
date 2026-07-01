@@ -37,6 +37,9 @@ const Login: React.FC = () => {
                 if (decoded.role) {
                     userRole = decoded.role;
                 }
+                if (decoded.sub) {
+                    localStorage.setItem('userEmail', decoded.sub);
+                }
             } catch (e) {
                 console.error("Failed to decode token", e);
             }

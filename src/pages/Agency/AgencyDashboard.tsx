@@ -20,12 +20,16 @@ const AgencyDashboard: React.FC = () => {
     const [tourists, setTourists] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [myAgency, setMyAgency] = useState<any>(null);
 
     useEffect(() => {
         if (activeTab === 'dashboard') {
             const fetchTourists = async () => {
                 setLoading(true);
                 try {
+                    const agencyData = await PartnerAPI.getMyAgency();
+                    setMyAgency(agencyData);
+                    
                     const data = await PartnerAPI.getAgencyTourists();
                     setTourists(data as any[]);
                 } catch (error) {
@@ -57,7 +61,7 @@ const AgencyDashboard: React.FC = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800 mb-1 flex items-center gap-2">
-                            <Map className="text-slate-500" size={22} /> Itinerary Navigation
+                            <Map className="text-slate-500" size={22} /> {myAgency ? `${myAgency.agencyName} - Itinerary Navigation` : 'Itinerary Navigation'}
                         </h1>
                         <p className="text-slate-500 text-sm">Manage and track tourists assigned to your agency.</p>
                     </div>

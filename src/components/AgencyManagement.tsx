@@ -39,7 +39,8 @@ const AgencyManagement: React.FC = () => {
                 await PartnerAPI.updateAgency(editingId, {
                     agencyName: agencyForm.name,
                     licenseNumber: Number(agencyForm.license.replace(/\D/g,'')) || 0,
-                    status: true
+                    status: true,
+                    email: agencyForm.email
                 });
                 Swal.fire({
                     icon: 'success',
@@ -60,7 +61,8 @@ const AgencyManagement: React.FC = () => {
                 await PartnerAPI.createAgency({
                     agencyName: agencyForm.name,
                     licenseNumber: Number(agencyForm.license.replace(/\D/g,'')) || 0,
-                    status: true
+                    status: true,
+                    email: agencyForm.email
                 });
 
                 Swal.fire({
@@ -95,7 +97,7 @@ const AgencyManagement: React.FC = () => {
         setAgencyForm({
             name: agency.agencyName,
             license: String(agency.licenseNumber),
-            email: '', // Don't fetch/show password/email for editing right now
+            email: agency.email || '', 
             password: ''
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });

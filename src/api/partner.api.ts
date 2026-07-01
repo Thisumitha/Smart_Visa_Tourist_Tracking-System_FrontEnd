@@ -133,22 +133,45 @@ export const PartnerAPI = {
     /**
      * Agency: Get assigned tourists and itineraries
      */
-    getAgencyTourists: async () => {
+    getMyAgency: async () => {
         try {
-            // For demonstration, we fetch tourists assigned to ANY agency since we don't have a specific agencyId in JWT
             const agenciesData = await PartnerAPI.getAllAgencies();
             const agencies = Array.isArray(agenciesData) ? agenciesData : (agenciesData?.content || []);
-            if (agencies.length === 0) return [];
+            if (agencies.length === 0) return null;
             
+            const email = localStorage.getItem('userEmail') || '';
+            if (email) {
+                // Try to match directly by email
+                const matched = agencies.find(a => a.email === email);
+                if (matched) return matched;
+                
+                // Fallback: match by prefix if email is missing from DB
+                const prefix = email.split('@')[0].toLowerCase();
+                const matchedPrefix = agencies.find(a => a.agencyName?.toLowerCase().includes(prefix) || prefix.includes(a.agencyName?.toLowerCase().replace(/\s/g, '')));
+                if (matchedPrefix) return matchedPrefix;
+            }
+            
+            return agencies[0]; // fallback
+        } catch (e) {
+            return null;
+        }
+    },
+
+    /**
+     * Agency: Get assigned tourists and itineraries
+     */
+    getAgencyTourists: async () => {
+        try {
+            const myAgency = await PartnerAPI.getMyAgency();
+            if (!myAgency) return [];
             let allAssignedIds: number[] = [];
-            for (const agency of agencies) {
-                try {
-                    const assignedIdsData = await PartnerAPI.getAssignedTourists(agency.agencyId);
-                    const assignedIds = Array.isArray(assignedIdsData) ? assignedIdsData : (assignedIdsData?.content || []);
-                    allAssignedIds = [...allAssignedIds, ...assignedIds];
-                } catch (e) {
-                    // Ignore errors for individual agencies
-                }
+            
+            try {
+                const assignedIdsData = await PartnerAPI.getAssignedTourists(myAgency.agencyId);
+                const assignedIds = Array.isArray(assignedIdsData) ? assignedIdsData : (assignedIdsData?.content || []);
+                allAssignedIds = assignedIds;
+            } catch (e) {
+                console.error("Failed to fetch assigned tourists for my agency");
             }
 
             if (allAssignedIds.length === 0) return [];
