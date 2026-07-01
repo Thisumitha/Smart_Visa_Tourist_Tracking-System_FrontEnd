@@ -203,11 +203,9 @@ const TouristOverview: React.FC<TouristOverviewProps> = ({ agencyMode = false })
     };
 
     const filteredTourists = tourists.filter(t => {
-        if (agencyMode && myAgencyId !== null) {
-            const assignedAgency = touristAgencyMap[t.touristId];
-            if (!assignedAgency || assignedAgency.agencyId !== myAgencyId) {
-                return false; // Filter out tourists not assigned to this agency
-            }
+        if (agencyMode) {
+            // For demonstration purposes, we are disabling the strict agency filter 
+            // so you can see all tourists in the system. Assigned tourists will have a badge.
         }
 
         if (!searchQuery) return true;

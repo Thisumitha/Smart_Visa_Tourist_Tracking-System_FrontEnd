@@ -135,23 +135,29 @@ export const PartnerAPI = {
      */
     getAgencyTourists: async () => {
         try {
-            // Since we don't have the exact agencyId from the JWT yet, we pick the first agency to demonstrate
+            // For demonstration, we fetch tourists assigned to ANY agency since we don't have a specific agencyId in JWT
             const agenciesData = await PartnerAPI.getAllAgencies();
             const agencies = Array.isArray(agenciesData) ? agenciesData : (agenciesData?.content || []);
             if (agencies.length === 0) return [];
             
-            const myAgencyId = agencies[0].agencyId; 
+            let allAssignedIds: number[] = [];
+            for (const agency of agencies) {
+                try {
+                    const assignedIdsData = await PartnerAPI.getAssignedTourists(agency.agencyId);
+                    const assignedIds = Array.isArray(assignedIdsData) ? assignedIdsData : (assignedIdsData?.content || []);
+                    allAssignedIds = [...allAssignedIds, ...assignedIds];
+                } catch (e) {
+                    // Ignore errors for individual agencies
+                }
+            }
 
-            // Get assigned tourist IDs
-            const assignedIdsData = await PartnerAPI.getAssignedTourists(myAgencyId);
-            const assignedIds = Array.isArray(assignedIdsData) ? assignedIdsData : (assignedIdsData?.content || []);
-            if (assignedIds.length === 0) return [];
+            if (allAssignedIds.length === 0) return [];
 
             // Fetch all tourists and filter
             const allTouristsData = await TouristAPI.getAllTourists();
             const allTourists = Array.isArray(allTouristsData) ? allTouristsData : (allTouristsData?.content || []);
             
-            const myTourists = allTourists.filter((t: any) => assignedIds.includes(t.touristId));
+            const myTourists = allTourists.filter((t: any) => allAssignedIds.includes(t.touristId));
 
             // Map full details
             const detailedTourists = await Promise.all(myTourists.map(async (t: any) => {
