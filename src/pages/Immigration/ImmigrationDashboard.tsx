@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, UserPlus, FileText, Globe, Calendar } from 'lucide-react';
+import { ShieldCheck, UserPlus, FileText, Globe } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PillNav from '../../components/PillNav';
 import RegistrationWizard from '../../components/RegistrationWizard';
