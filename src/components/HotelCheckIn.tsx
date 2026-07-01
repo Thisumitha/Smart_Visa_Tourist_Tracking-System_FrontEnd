@@ -93,10 +93,14 @@ const HotelCheckIn: React.FC = () => {
             setPassportNumber('');
 
         } catch (error: any) {
+            const errorMsg = error.response?.data?.message || 
+                             (typeof error.response?.data === 'string' ? error.response.data : JSON.stringify(error.response?.data)) || 
+                             'Could not complete check-in.';
+
             Swal.fire({
                 icon: 'error',
                 title: 'Check-In Failed',
-                text: error.response?.data || 'Could not complete check-in.',
+                text: errorMsg,
                 background: '#0f172a',
                 color: '#fff',
                 confirmButtonColor: '#ef4444'
