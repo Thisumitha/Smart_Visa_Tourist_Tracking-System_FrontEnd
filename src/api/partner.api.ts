@@ -22,14 +22,33 @@ export const PartnerAPI = {
     },
 
     /**
-     * Get all Travel Agencies
+     * Get all Travel Agencies with pagination
      */
-    getAllAgencies: async () => {
+    getAllAgencies: async (pageNo: number = 0, pageSize: number = 10, sortBy: string = 'agencyName', sortDir: string = 'asc') => {
         try {
-            const response = await partnerApiClient.get('/agency', getAuthHeaders());
+            const params = new URLSearchParams({
+                pageNo: pageNo.toString(),
+                pageSize: pageSize.toString(),
+                sortBy,
+                sortDir
+            });
+            const response = await partnerApiClient.get(`/agency?${params.toString()}`, getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error("Failed to get all agencies", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get Travel Agency by ID
+     */
+    getAgencyById: async (id: number) => {
+        try {
+            const response = await partnerApiClient.get(`/agency/${id}`, getAuthHeaders());
+            return response.data;
+        } catch (error) {
+            console.error("Failed to get agency by ID", error);
             throw error;
         }
     },
@@ -69,6 +88,19 @@ export const PartnerAPI = {
             return response.data;
         } catch (error) {
             console.error("Failed to update agency", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Partially update an existing Travel Agency
+     */
+    partialUpdateAgency: async (id: number, agencyData: any) => {
+        try {
+            const response = await partnerApiClient.patch(`/agency/${id}`, agencyData, getAuthHeaders());
+            return response.data;
+        } catch (error) {
+            console.error("Failed to partially update agency", error);
             throw error;
         }
     },
