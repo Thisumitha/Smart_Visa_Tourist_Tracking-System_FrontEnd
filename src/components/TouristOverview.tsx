@@ -47,7 +47,7 @@ const TouristOverview: React.FC<TouristOverviewProps> = ({ agencyMode = false })
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [touristAgencyMap, setTouristAgencyMap] = useState<Record<number, any>>({});
-    const [myAgencyId, setMyAgencyId] = useState<number | null>(null);
+
 
     // State for expanded tourist rows
     const [expandedTourist, setExpandedTourist] = useState<number | null>(null);
@@ -80,9 +80,7 @@ const TouristOverview: React.FC<TouristOverviewProps> = ({ agencyMode = false })
                 const agenciesData = await PartnerAPI.getAllAgencies();
                 const agencies = Array.isArray(agenciesData) ? agenciesData : (agenciesData?.content || []);
                 
-                if (agencies.length > 0) {
-                    setMyAgencyId(agencies[0].agencyId);
-                }
+
                 
                 const mapping: Record<number, any> = {};
                 
