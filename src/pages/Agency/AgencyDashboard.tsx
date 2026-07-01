@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PartnerAPI } from '../../api/partner.api';
-import { Map, CheckCircle2, Compass, Globe, LayoutDashboard } from 'lucide-react';
+import { Map, CheckCircle2, Compass, Globe, LayoutDashboard, Search } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PillNav from '../../components/PillNav';
 import TouristOverview from '../../components/TouristOverview';
@@ -19,6 +19,7 @@ const AgencyDashboard: React.FC = () => {
 
     const [tourists, setTourists] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         if (activeTab === 'dashboard') {
@@ -41,13 +42,35 @@ const AgencyDashboard: React.FC = () => {
         if (activeTab === 'tourist-overview') return <TouristOverview agencyMode={true} />;
         if (activeTab === 'travel-plans') return <AgencyTravelLog />;
 
+        const filteredTourists = tourists.filter(t => {
+            if (!searchQuery) return true;
+            const q = searchQuery.toLowerCase();
+            return (
+                t.name?.toLowerCase().includes(q) ||
+                t.nationality?.toLowerCase().includes(q) ||
+                t.status?.toLowerCase().includes(q)
+            );
+        });
+
         return (
             <div className="max-w-6xl mx-auto mt-4">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-slate-800 mb-1 flex items-center gap-2">
-                        <Map className="text-slate-500" size={22} /> Itinerary Navigation
-                    </h1>
-                    <p className="text-slate-500 text-sm">Manage and track tourists assigned to your agency.</p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-800 mb-1 flex items-center gap-2">
+                            <Map className="text-slate-500" size={22} /> Itinerary Navigation
+                        </h1>
+                        <p className="text-slate-500 text-sm">Manage and track tourists assigned to your agency.</p>
+                    </div>
+                    <div className="relative w-full md:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search tourists..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        />
+                    </div>
                 </div>
 
                 <div className="glass-panel rounded-2xl overflow-hidden shadow-card">
@@ -66,12 +89,12 @@ const AgencyDashboard: React.FC = () => {
                                 <tr>
                                     <td colSpan={5} className="px-5 py-10 text-center text-slate-400 text-sm">Loading assigned tourists...</td>
                                 </tr>
-                            ) : tourists.length === 0 ? (
+                            ) : filteredTourists.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-5 py-10 text-center text-slate-400 text-sm">No tourists assigned.</td>
+                                    <td colSpan={5} className="px-5 py-10 text-center text-slate-400 text-sm">No tourists found.</td>
                                 </tr>
                             ) : (
-                                tourists.map(t => (
+                                filteredTourists.map(t => (
                                     <tr key={t.id} className="border-b border-glassborder hover:bg-slate-50/60 transition-colors">
                                         <td className="px-5 py-4 font-medium text-slate-800">{t.name}</td>
                                         <td className="px-5 py-4 text-slate-500 text-sm">{t.nationality}</td>

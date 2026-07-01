@@ -47,10 +47,10 @@ const AMBER  = '#BA7517';
 const RED    = '#E24B4A';
 
 // ─── Shared Chart defaults ────────────────────────────────────────────────────
-const GRID_COLOR  = 'rgba(255,255,255,0.06)';
-const TICK_COLOR  = 'rgba(255,255,255,0.35)';
-const TOOLTIP_BG  = '#1e293b';
-const TOOLTIP_FG  = '#e2e8f0';
+const GRID_COLOR  = 'rgba(148, 163, 184, 0.2)'; // slate-400 with opacity
+const TICK_COLOR  = '#64748b'; // slate-500
+const TOOLTIP_BG  = '#ffffff';
+const TOOLTIP_FG  = '#334155';
 
 const sharedOptions = {
     responsive: true,
@@ -59,9 +59,9 @@ const sharedOptions = {
         legend: { display: false },
         tooltip: {
             backgroundColor: TOOLTIP_BG,
-            titleColor: '#fff',
+            titleColor: '#334155',
             bodyColor: TOOLTIP_FG,
-            borderColor: 'rgba(255,255,255,0.12)',
+            borderColor: '#e2e8f0',
             borderWidth: 1,
             padding: 10,
             cornerRadius: 8,
@@ -278,7 +278,7 @@ const VisaDashboard: React.FC = () => {
             {/* ── Entry vs Exit bar chart ──────────────────────────────────── */}
             <div className="glass-panel rounded-2xl p-5 border border-slate-700/40">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-white">Entry vs Exit — Last 6 Months</h3>
+                    <h3 className="text-sm font-semibold text-slate-800">Entry vs Exit — Last 6 Months</h3>
                     <div className="flex items-center gap-4">
                         <span className="flex items-center gap-1.5 text-xs text-slate-400">
                             <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: BLUE }} />Entries
@@ -311,7 +311,7 @@ const VisaDashboard: React.FC = () => {
             {/* ── Tourist Presence ─────────────────────────────────────────── */}
             <div className="glass-panel rounded-2xl p-5 border border-slate-700/40">
                 <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block" />
                         Tourist Presence
                     </h3>
@@ -345,17 +345,17 @@ const VisaDashboard: React.FC = () => {
                             <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#22d3ee' }} />
                                 <span className="text-slate-400 flex-1">In Country</span>
-                                <span className="font-bold text-white">{touristsInside}</span>
+                                <span className="font-bold text-slate-800">{touristsInside}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded-full bg-slate-600" />
                                 <span className="text-slate-400 flex-1">Exited</span>
-                                <span className="font-bold text-white">{Math.max(0, totalExits)}</span>
+                                <span className="font-bold text-slate-800">{Math.max(0, totalExits)}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded-full bg-slate-500" />
                                 <span className="text-slate-400 flex-1">Total Registered</span>
-                                <span className="font-bold text-white">{totalTourists}</span>
+                                <span className="font-bold text-slate-800">{totalTourists}</span>
                             </div>
                         </div>
                     </div>
@@ -427,7 +427,7 @@ const VisaDashboard: React.FC = () => {
 
                 {/* Visa status donut */}
                 <div className="glass-panel rounded-2xl p-5 border border-slate-700/40">
-                    <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />
                         Visa Status Breakdown
                     </h3>
@@ -446,7 +446,7 @@ const VisaDashboard: React.FC = () => {
                                 options={{ ...sharedOptions, cutout: '72%', layout: { padding: 4 } }}
                             />
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                                <span className="text-lg font-bold text-white">{donutTotal}</span>
+                                <span className="text-lg font-bold text-slate-800">{donutTotal}</span>
                                 <span className="text-xs text-slate-400">total</span>
                             </div>
                         </div>
@@ -460,7 +460,7 @@ const VisaDashboard: React.FC = () => {
                                 <div key={item.label} className="flex items-center gap-2 text-xs">
                                     <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: item.color }} />
                                     <span className="text-slate-400 flex-1">{item.label}</span>
-                                    <span className="font-semibold text-white">{item.value}</span>
+                                    <span className="font-semibold text-slate-800">{item.value}</span>
                                 </div>
                             ))}
                         </div>
@@ -469,7 +469,7 @@ const VisaDashboard: React.FC = () => {
 
                 {/* Nationality horizontal bar */}
                 <div className="glass-panel rounded-2xl p-5 border border-slate-700/40">
-                    <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />
                         Top Nationalities
                     </h3>
@@ -507,7 +507,7 @@ const VisaDashboard: React.FC = () => {
 
                 {/* Visa alerts list */}
                 <div className="glass-panel rounded-2xl p-5 border border-slate-700/40">
-                    <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
                         <AlertTriangle size={14} className="text-red-400" />
                         Visa Alerts
                         <span className="ml-auto px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-semibold">
@@ -545,7 +545,7 @@ const VisaDashboard: React.FC = () => {
 
                 {/* 7-day expiry countdown line chart */}
                 <div className="glass-panel rounded-2xl p-5 border border-slate-700/40">
-                    <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
                         <Clock size={14} className="text-amber-400" />
                         7-Day Visa Expiry Countdown
                     </h3>
